@@ -48,9 +48,8 @@
     let width, height;
     let maskData = [];
     let particles = [];
-    // Increase density for a rich "rain" effect
-    const PARTICLE_COUNT = 2500; 
-    let frameCount = 0; // For pulsation timing
+    const PARTICLE_COUNT = 2000; 
+    let frameCount = 0; // Added this to control the pulsing speed!
 
     function resize() {
         width = canvas.width = window.innerWidth;
@@ -59,78 +58,98 @@
     }
 
     function createMask() {
-        // Create an offline mask to handle the collision physics boundary
         const maskCanvas = document.createElement('canvas');
         maskCanvas.width = width;
         maskCanvas.height = height;
         const maskCtx = maskCanvas.getContext('2d');
 
         maskCtx.fillStyle = '#FFFFFF';
-        // Size of the invisible '8' boundary (Matches visible size below)
-        maskCtx.font = `900 ${Math.min(width, height) * 0.45}px "Arial Black", Impact, sans-serif`;
+        maskCtx.font = `900 ${Math.min(width, height) * 0.35}px "Arial Black", Impact, sans-serif`;
         maskCtx.textAlign = 'center';
         maskCtx.textBaseline = 'middle';
         maskCtx.fillText('8', width / 2, height / 2);
 
         const imageData = maskCtx.getImageData(0, 0, width, height).data;
         maskData = new Uint8Array(width * height);
+        
         for (let i = 0; i < imageData.length; i += 4) {
-            maskData[i / 4] = imageData[imageData[i] > 128 ? i : 0] > 128 ? 1 : 0;
+            maskData[i / 4] = imageData[i] > 128 ? 1 : 0;
         }
     }
 
     class Particle {
         constructor() {
+            this.direction = Math.random() > 0.5 ? 'up' : 'down';
             this.reset();
-            this.y = Math.random() * height; // Spread evenly at start
+            this.x = Math.random() * width; 
+            this.y = Math.random() * height;
+            this.prevX = this.x;
             this.prevY = this.y;
         }
 
         reset() {
-            // THE MATRIX CODE FIX: Start at the TOP of the screen, random horizontal spot
-            this.x = Math.random() * width;
-            this.y = -20; // Spawn off-screen top
+            this.x = Math.random() * width; 
             this.prevX = this.x;
+            
+            if (this.direction === 'down') {
+                this.y = -20; 
+                this.baseVy = Math.random() * 2 + 2; 
+            } else {
+                this.y = height + 20; 
+                this.baseVy = -(Math.random() * 2 + 2); 
+            }
+            
             this.prevY = this.y;
-            this.vx = (Math.random() - 0.5) * 0.5; // Minimal drift
-            this.vy = (Math.random() * 4 + 3); // Flowing DOWN rapidly like Matrix code
+            this.vx = 0; 
+            this.vy = this.baseVy; 
             this.life = Math.random(); 
+            
+            this.phase = Math.random() * Math.PI * 2; 
+            this.amplitude = Math.random() * 15 + 5; 
+            this.frequency = Math.random() * 0.01 + 0.005; 
         }
 
         update() {
             this.prevX = this.x;
             this.prevY = this.y;
 
+            this.vx = Math.cos(this.y * this.frequency + this.phase) * this.amplitude * 0.05;
+
             let nextX = this.x + this.vx;
             let nextY = this.y + this.vy;
 
-            // If goes off bottom or sides, reset to top
-            if (nextY > height + 20 || nextX < -10 || nextX > width + 10) {
-                this.reset();
-                return;
-            }
+            if (this.direction === 'down' && nextY > height + 20) { this.reset(); return; }
+            if (this.direction === 'up' && nextY < -20) { this.reset(); return; }
+            if (nextX < -20 || nextX > width + 20) { this.reset(); return; }
 
-            let maskIndex = Math.floor(nextY) * width + Math.floor(nextX);
+            let checkX = Math.floor(nextX);
+            let checkY = Math.floor(nextY);
+            
+            if (checkX >= 0 && checkX < width && checkY >= 0 && checkY < height) {
+                let maskIndex = checkY * width + checkX;
 
-            // COLLISION: If hitting the '8' mask boundary...
-            if (maskData[maskIndex] === 1) {
-                // ...push the particles SIDEWAYS around the shape
-                this.vx += (this.x < width / 2) ? -1.5 : 1.5;
-                // Slow down vertical speed as it hits the boundary
-                this.vy *= 0.8; 
-            } else {
-                // Gently return to normal falling velocity
-                this.vx *= 0.95; 
-                this.vy = Math.min(this.vy * 1.01, 7); // Gently speed back up to 'terminal' velocity
+                if (maskData[maskIndex] === 1) {
+                    if (this.x < width / 2) {
+                        this.vx -= 3.5; 
+                    } else {
+                        this.vx += 3.5; 
+                    }
+                    this.vy *= 0.8; 
+                } else {
+                    if (this.direction === 'down') {
+                        this.vy = Math.min(this.vy * 1.05, this.baseVy);
+                    } else {
+                        this.vy = Math.max(this.vy * 1.05, this.baseVy);
+                    }
+                }
             }
 
             this.x += this.vx;
             this.y += this.vy;
+            this.phase += 0.05; 
         }
 
         draw() {
-            // Draw sleek, high-speed falling lines (The Matrix Code)
-            // Color is BLINDING Neon Cyan for high contrast against background
             ctx.strokeStyle = `rgba(0, 255, 255, ${0.4 + this.life * 0.6})`;
             ctx.lineWidth = 1.5; 
             ctx.lineCap = 'round';
@@ -140,10 +159,9 @@
             ctx.lineTo(this.x, this.y);
             ctx.stroke();
 
-            // Minimalist data node at the front
             ctx.fillStyle = `rgba(0, 255, 255, ${0.8 + this.life * 0.2})`;
             ctx.beginPath();
-            ctx.arc(this.x, this.y, 1.0, 0, Math.PI * 2);
+            ctx.arc(this.x, this.y, 1.5, 0, Math.PI * 2);
             ctx.fill();
         }
     }
@@ -156,39 +174,38 @@
     }
 
     function animate() {
-        frameCount++;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.25)'; // Black background fade
+        frameCount++; // Time moving forward
+        
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.fillRect(0, 0, width, height);
 
-        // --- SUBTLE TURQUOISE PULSATING '8' ---
-        // Drawn BEFORE the bright trails to sit "behind" them slightly
-        // We use Math.sin on the alpha channel for that slow, subtle "vibe" pulsation
+        // --- THE VISIBLE, SMOKY BABY BLUE '8' ---
+        // Calculate the pulse: goes from 0.2 (transparent) up to 0.85 (more opaque)
+        let pulseAlpha = 0.2 + ((Math.sin(frameCount * 0.05) + 1) / 2) * 0.65;
         
-        // Use a subtle Turquoise color (e.g., Pale Turquoise #AFEEEE)
-        // Adjust pulsating alpha: oscillates between 0.05 (subtle) and 0.2 (more visible)
-        let subtleAlpha = 0.05 + ((Math.sin(frameCount * 0.03) + 1) / 2) * 0.15;
-        
-        ctx.fillStyle = `rgba(175, 238, 238, ${subtleAlpha})`; // Pale Turquoise Subtle
-        
-        // Add a gentle Turquoise bloom shadow for an ethereal glow
-        ctx.shadowColor = 'rgba(175, 238, 238, 0.5)';
-        ctx.shadowBlur = 15;
+        ctx.save();
+        // Light Baby Blue Color
+        ctx.fillStyle = `rgba(137, 207, 240, ${pulseAlpha})`; 
+        // The "Smoke Screen" glow effect
+        ctx.shadowColor = `rgba(137, 207, 240, ${pulseAlpha})`; 
+        ctx.shadowBlur = 25; 
 
-        // Matches font and alignment from the boundary creation
-        ctx.font = `900 ${Math.min(width, height) * 0.45}px "Arial Black", Impact, sans-serif`;
+        // Draw it right in the center!
+        ctx.font = `900 ${Math.min(width, height) * 0.35}px "Arial Black", Impact, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('8', width / 2, height / 2);
+        ctx.restore(); // Turn off the smoke shadow so the sharp trails don't blur!
 
-        // Reset shadow settings before drawing the sharp particles
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
+        // --- DRAW THE CYAN DATA STREAMS ON TOP ---
+        ctx.globalCompositeOperation = 'lighter';
 
-        // Draw blinding particles over the 8 for depth-of-field
-        ctx.globalCompositeOperation = 'lighter'; // Additive blending for blinding neon glow
-        particles.forEach(p => { p.update(); p.draw(); });
-        ctx.globalCompositeOperation = 'source-over'; // Reset blending
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
 
+        ctx.globalCompositeOperation = 'source-over';
         requestAnimationFrame(animate);
     }
 
@@ -208,13 +225,18 @@
             audioStarted = true;
             if(startText) startText.style.opacity = '0';
             
-            // Surge! When the beat drops, all Matrix rain speeds up massively for a split second
+            // Surge in BOTH directions when the beat drops!
             particles.forEach(p => {
-                p.vy += (Math.random() * 15 + 10); 
+                if (p.direction === 'down') {
+                    p.vy += (Math.random() * 10 + 5); 
+                } else {
+                    p.vy -= (Math.random() * 10 + 5); 
+                }
             });
         }
     });
 </script>
+
 
 
 <div style="
