@@ -63,8 +63,8 @@
         const maskCtx = maskCanvas.getContext('2d');
 
         maskCtx.fillStyle = '#FFFFFF';
-        // Size of the invisible "8"
-        maskCtx.font = 900 ${Math.min(width, height) * 0.45}px "Arial Black", Impact, sans-serif;
+        // FIXED SIZE: 0.35 makes the '8' loops clear on iPad
+        maskCtx.font = `900 ${Math.min(width, height) * 0.35}px "Arial Black", Impact, sans-serif`;
         maskCtx.textAlign = 'center';
         maskCtx.textBaseline = 'middle';
         maskCtx.fillText('8', width / 2, height / 2);
@@ -131,7 +131,6 @@
         }
 
         draw() {
-            // MAX BRIGHTNESS CYAN TRAILS
             ctx.strokeStyle = `rgba(0, 255, 255, ${0.4 + this.life * 0.6})`;
             ctx.lineWidth = 2.0; 
             ctx.lineCap = 'round';
@@ -141,7 +140,6 @@
             ctx.lineTo(this.x, this.y);
             ctx.stroke();
 
-            // PURE CYAN DATA NODES (Removed the white so it doesn't wash out)
             ctx.fillStyle = `rgba(0, 255, 255, ${0.8 + this.life * 0.2})`;
             ctx.beginPath();
             ctx.arc(this.x, this.y, 1.5, 0, Math.PI * 2);
@@ -157,11 +155,9 @@
     }
 
     function animate() {
-        // DARKER BACKGROUND FADE: This is the secret to high contrast neon!
         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.fillRect(0, 0, width, height);
 
-        // Additive blending for the glow
         ctx.globalCompositeOperation = 'lighter';
 
         particles.forEach(p => {
@@ -178,7 +174,6 @@
     initParticles();
     animate();
 
-    // --- HIDDEN PLAY BUTTON LOGIC ---
     let audioStarted = false;
     const bgMusic = document.getElementById('bg-music');
     const startText = document.getElementById('start-text');
@@ -195,6 +190,7 @@
         }
     });
 </script>
+
 
 
 <div style="
