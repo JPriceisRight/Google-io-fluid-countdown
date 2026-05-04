@@ -49,7 +49,7 @@
     let maskData = [];
     let particles = [];
     const PARTICLE_COUNT = 2000; 
-    let frameCount = 0; // Added this to control the pulsing speed!
+    let frameCount = 0; 
 
     function resize() {
         width = canvas.width = window.innerWidth;
@@ -64,6 +64,7 @@
         const maskCtx = maskCanvas.getContext('2d');
 
         maskCtx.fillStyle = '#FFFFFF';
+        // The physics mask remains solid to push particles around it smoothly
         maskCtx.font = `900 ${Math.min(width, height) * 0.35}px "Arial Black", Impact, sans-serif`;
         maskCtx.textAlign = 'center';
         maskCtx.textBaseline = 'middle';
@@ -174,30 +175,30 @@
     }
 
     function animate() {
-        frameCount++; // Time moving forward
+        frameCount++; 
         
         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.fillRect(0, 0, width, height);
 
-        // --- THE VISIBLE, SMOKY BABY BLUE '8' ---
-        // Calculate the pulse: goes from 0.2 (transparent) up to 0.85 (more opaque)
+        // --- THE HOLLOWED-OUT NEON '8' ---
         let pulseAlpha = 0.2 + ((Math.sin(frameCount * 0.05) + 1) / 2) * 0.65;
         
         ctx.save();
-        // Light Baby Blue Color
-        ctx.fillStyle = `rgba(137, 207, 240, ${pulseAlpha})`; 
-        // The "Smoke Screen" glow effect
+        // Changed to strokeStyle for an outline
+        ctx.strokeStyle = `rgba(137, 207, 240, ${pulseAlpha})`; 
+        // Lowered blur slightly so it doesn't bleed into the black dots
         ctx.shadowColor = `rgba(137, 207, 240, ${pulseAlpha})`; 
-        ctx.shadowBlur = 25; 
+        ctx.shadowBlur = 10; 
+        ctx.lineWidth = 6; // Thickness of the neon outline
 
-        // Draw it right in the center!
         ctx.font = `900 ${Math.min(width, height) * 0.35}px "Arial Black", Impact, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('8', width / 2, height / 2);
-        ctx.restore(); // Turn off the smoke shadow so the sharp trails don't blur!
+        
+        // Using strokeText to make it hollow!
+        ctx.strokeText('8', width / 2, height / 2);
+        ctx.restore(); 
 
-        // --- DRAW THE CYAN DATA STREAMS ON TOP ---
         ctx.globalCompositeOperation = 'lighter';
 
         particles.forEach(p => {
@@ -225,7 +226,6 @@
             audioStarted = true;
             if(startText) startText.style.opacity = '0';
             
-            // Surge in BOTH directions when the beat drops!
             particles.forEach(p => {
                 if (p.direction === 'down') {
                     p.vy += (Math.random() * 10 + 5); 
@@ -236,6 +236,7 @@
         }
     });
 </script>
+
 
 
 
