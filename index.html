@@ -129,25 +129,28 @@
             this.turbulence += 0.05; 
         }
 
-        draw() {
-            // THE PRO TRICK: Drawing lines instead of dots for that long-exposure look
-            // Using Pure Electric Cyan for maximum neon glow
-            ctx.strokeStyle = `rgba(0, 255, 255, ${0.1 + this.life * 0.6})`;
-            ctx.lineWidth = 2.5; 
-            ctx.lineCap = 'round';
+                draw() {
+            // NEW: Create a soft, radial gradient for that ghostly "vibe" look
+            // The core of the particle is bright white, fading to ethereal light blue.
+            // Referencing the yellow-white core and light blue edges of your ghost video!
             
+            ctx.save(); // Save current state
+            ctx.globalAlpha = 0.1 + this.life * 0.5; // Controls the soft overall translucency
+            
+            let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 10);
+            gradient.addColorStop(0, '#FFFFFF');    // Bright White Core
+            gradient.addColorStop(0.2, '#FAFAD2');  // Optional: Pale Yellow (LightGoldenrodYellow) like the ref!
+            gradient.addColorStop(0.5, '#ADD8E6');  // Ethereal Light Blue (LightBlue)
+            gradient.addColorStop(1, 'rgba(173, 216, 230, 0)'); // Fades completely to translucent blue
+            
+            ctx.fillStyle = gradient;
             ctx.beginPath();
-            ctx.moveTo(this.prevX, this.prevY);
-            ctx.lineTo(this.x, this.y);
-            ctx.stroke();
+            // Slightly larger circle to create a softer, smoke-like form
+            ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore(); // Restore state
         }
-    }
-
-    function initParticles() {
-        particles = [];
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-            particles.push(new Particle());
-        }
+ }
     }
 
     function animate() {
