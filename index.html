@@ -48,7 +48,7 @@
     let width, height;
     let maskData = [];
     let particles = [];
-    const PARTICLE_COUNT = 2000; 
+    const PARTICLE_COUNT = 2500; 
 
     function resize() {
         width = canvas.width = window.innerWidth;
@@ -80,18 +80,25 @@
         constructor() {
             this.reset();
             this.y = Math.random() * height; 
+            this.prevX = this.x;
+            this.prevY = this.y;
         }
 
         reset() {
             this.x = Math.random() * width;
             this.y = height + 20; 
+            this.prevX = this.x;
+            this.prevY = this.y;
             this.vx = (Math.random() - 0.5) * 1.5; 
-            this.vy = -(Math.random() * 2 + 1.5); // Flowing UP
+            this.vy = -(Math.random() * 3 + 2); // Faster upward flow
             this.life = Math.random(); 
             this.turbulence = Math.random() * 100; 
         }
 
         update() {
+            this.prevX = this.x;
+            this.prevY = this.y;
+
             this.vx += Math.sin((this.y * 0.02) + this.turbulence) * 0.05;
             let nextX = this.x + this.vx;
             let nextY = this.y + this.vy;
@@ -103,11 +110,11 @@
 
             let maskIndex = Math.floor(nextY) * width + Math.floor(nextX);
             if (maskData[maskIndex] === 1) {
-                if (this.x < width / 2) this.vx -= 0.8; 
-                else this.vx += 0.8; 
+                if (this.x < width / 2) this.vx -= 1.0; 
+                else this.vx += 1.0; 
                 this.vy *= 0.85; 
             } else {
-                this.vx *= 0.96;
+                this.vx *= 0.95;
             }
 
             this.x += this.vx;
@@ -116,22 +123,15 @@
         }
 
         draw() {
-            ctx.save();
-            // Additive blending for max brightness
-            ctx.globalCompositeOperation = 'lighter'; 
-            ctx.globalAlpha = 0.2 + this.life * 0.5; 
+            // MAX BRIGHTNESS CYAN
+            ctx.strokeStyle = `rgba(0, 255, 255, ${0.4 + this.life * 0.6})`;
+            ctx.lineWidth = 2.5; 
+            ctx.lineCap = 'round';
             
-            // Bright white core fading into intense neon cyan
-            let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 8);
-            gradient.addColorStop(0, '#FFFFFF');    
-            gradient.addColorStop(0.3, '#00FFFF');  
-            gradient.addColorStop(1, 'rgba(0, 255, 255, 0)'); 
-            
-            ctx.fillStyle = gradient;
             ctx.beginPath();
-            ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
+            ctx.moveTo(this.prevX, this.prevY);
+            ctx.lineTo(this.x, this.y);
+            ctx.stroke();
         }
     }
 
@@ -143,7 +143,12 @@
     function animate() {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
         ctx.fillRect(0, 0, width, height);
+
+        ctx.globalCompositeOperation = 'lighter'; // Additive blending for that glowing pop
+
         particles.forEach(p => { p.update(); p.draw(); });
+
+        ctx.globalCompositeOperation = 'source-over';
         requestAnimationFrame(animate);
     }
 
@@ -162,7 +167,7 @@
             bgMusic.play();
             audioStarted = true;
             if(startText) startText.style.opacity = '0';
-            particles.forEach(p => { p.vy -= (Math.random() * 8 + 4); });
+            particles.forEach(p => { p.vy -= (Math.random() * 10 + 5); });
         }
     });
 </script>
