@@ -48,7 +48,7 @@
     let width, height;
     let maskData = [];
     let particles = [];
-    const PARTICLE_COUNT = 1800; // Perfect density for sine waves
+    const PARTICLE_COUNT = 2000; 
 
     function resize() {
         width = canvas.width = window.innerWidth;
@@ -63,7 +63,7 @@
         const maskCtx = maskCanvas.getContext('2d');
 
         maskCtx.fillStyle = '#FFFFFF';
-        // Size of the invisible "8"
+        // Shrunk the 8 so you can see the loops!
         maskCtx.font = `900 ${Math.min(width, height) * 0.45}px "Arial Black", Impact, sans-serif`;
         maskCtx.textAlign = 'center';
         maskCtx.textBaseline = 'middle';
@@ -71,7 +71,6 @@
 
         const imageData = maskCtx.getImageData(0, 0, width, height).data;
         maskData = new Uint8Array(width * height);
-        
         for (let i = 0; i < imageData.length; i += 4) {
             maskData[i / 4] = imageData[i] > 128 ? 1 : 0;
         }
@@ -80,101 +79,71 @@
     class Particle {
         constructor() {
             this.reset();
-            // Scatter them randomly across the screen at start
-            this.x = Math.random() * width; 
-            this.prevX = this.x;
+            this.y = Math.random() * height; 
         }
 
         reset() {
-            this.x = -10; // Spawn off-screen to the left
-            this.y = Math.random() * height; // Spread evenly top to bottom
-            this.prevX = this.x;
-            this.prevY = this.y;
-            this.vx = Math.random() * 2 + 2; // Flowing horizontally (Left to Right)
-            this.vy = 0; 
+            this.x = Math.random() * width;
+            this.y = height + 20; 
+            this.vx = (Math.random() - 0.5) * 1.5; 
+            this.vy = -(Math.random() * 2 + 1.5); // Flowing UP
             this.life = Math.random(); 
-            
-            // Math for the Wavy Motion
-            this.phase = Math.random() * Math.PI * 2; 
-            this.amplitude = Math.random() * 15 + 5; 
-            this.frequency = Math.random() * 0.01 + 0.005; 
+            this.turbulence = Math.random() * 100; 
         }
 
         update() {
-            this.prevX = this.x;
-            this.prevY = this.y;
-
-            // Apply Sine Wave motion to the Y axis
-            this.vy = Math.cos(this.x * this.frequency + this.phase) * this.amplitude * 0.05;
-
+            this.vx += Math.sin((this.y * 0.02) + this.turbulence) * 0.05;
             let nextX = this.x + this.vx;
             let nextY = this.y + this.vy;
 
-            // If it goes off the right side of the screen, reset to the left
-            if (nextX > width + 10 || nextY < 0 || nextY > height) {
+            if (nextY < 0 || nextX < 0 || nextX > width) {
                 this.reset();
                 return;
             }
 
             let maskIndex = Math.floor(nextY) * width + Math.floor(nextX);
-
             if (maskData[maskIndex] === 1) {
-                // Divert AROUND the invisible 8
-                if (this.y < height / 2) {
-                    this.vy -= 2.5; // Push up over the top half
-                } else {
-                    this.vy += 2.5; // Push down under the bottom half
-                }
-                this.vx *= 0.8; // Slow down slightly on impact
+                if (this.x < width / 2) this.vx -= 0.8; 
+                else this.vx += 0.8; 
+                this.vy *= 0.85; 
             } else {
-                // Gently return to normal horizontal speed
-                this.vx = Math.min(this.vx * 1.05, 4);
+                this.vx *= 0.96;
             }
 
             this.x += this.vx;
             this.y += this.vy;
-            this.phase += 0.05; // Keep the wave animating
+            this.turbulence += 0.05; 
         }
 
         draw() {
-            // 1. Draw the sleek data trail (Electric Cyan)
-            ctx.strokeStyle = `rgba(0, 255, 255, ${0.15 + this.life * 0.4})`;
-            ctx.lineWidth = 1.5; 
-            ctx.lineCap = 'round';
+            ctx.save();
+            // Additive blending for max brightness
+            ctx.globalCompositeOperation = 'lighter'; 
+            ctx.globalAlpha = 0.2 + this.life * 0.5; 
             
+            // Bright white core fading into intense neon cyan
+            let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 8);
+            gradient.addColorStop(0, '#FFFFFF');    
+            gradient.addColorStop(0.3, '#00FFFF');  
+            gradient.addColorStop(1, 'rgba(0, 255, 255, 0)'); 
+            
+            ctx.fillStyle = gradient;
             ctx.beginPath();
-            ctx.moveTo(this.prevX, this.prevY);
-            ctx.lineTo(this.x, this.y);
-            ctx.stroke();
-
-            // 2. Draw the bright glowing "Data Node" at the front of the line
-            ctx.fillStyle = `rgba(255, 255, 255, ${0.4 + this.life * 0.6})`;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, 1.5, 0, Math.PI * 2);
+            ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
             ctx.fill();
+            ctx.restore();
         }
     }
 
     function initParticles() {
         particles = [];
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-            particles.push(new Particle());
-        }
+        for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
     }
 
     function animate() {
-        // Dark trail fade
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
         ctx.fillRect(0, 0, width, height);
-
-        ctx.globalCompositeOperation = 'lighter';
-
-        particles.forEach(p => {
-            p.update();
-            p.draw();
-        });
-
-        ctx.globalCompositeOperation = 'source-over';
+        particles.forEach(p => { p.update(); p.draw(); });
         requestAnimationFrame(animate);
     }
 
@@ -193,15 +162,10 @@
             bgMusic.play();
             audioStarted = true;
             if(startText) startText.style.opacity = '0';
-            
-            // Make the horizontal wave surge forward when the beat drops!
-            particles.forEach(p => {
-                p.vx += (Math.random() * 10 + 5); 
-            });
+            particles.forEach(p => { p.vy -= (Math.random() * 8 + 4); });
         }
     });
 </script>
-
 
 <div style="
     background: #0a0a0a; 
