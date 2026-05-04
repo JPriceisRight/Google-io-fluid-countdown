@@ -1,1 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google I/O Countdown - Invisible 8</title>
+    <style>
+        /* The Absolute Black Background */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="fluidCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('fluidCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height;
+    let maskData = [];
+    let particles = [];
+    const PARTICLE_COUNT = 1500; // Adjust for performance vs density
+
+    // Resize canvas to fill the screen
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        createMask();
+    }
+
+    // Step 1: Create the invisible "8" mask
+    function createMask() {
+        // Create an off-screen canvas to draw the 8
+        const maskCanvas = document.createElement('canvas');
+        maskCanvas.width = width;
+        maskCanvas.height = height;
+        const maskCtx = maskCanvas.getContext('2d');
+
+        // Draw a massive "8" in the center
+        maskCtx.fillStyle = '#FFFFFF';
+        maskCtx.font = `900 ${Math.min(width, height) * 0.8}px sans-serif`;
+        maskCtx.textAlign = 'center';
+        maskCtx.textBaseline = 'middle';
+        maskCtx.fillText('8', width / 2, height / 2);
+
+        // Extract pixel data so we know where the "8" is solid
+        const imageData = maskCtx.getImageData(0, 0, width, height).data;
+        maskData = new Uint8Array(width * height);
+        
+        // Simplify the data: 1 if it's the "8", 0 if empty space
+        for (let i = 0; i < imageData.length; i += 4) {
+            maskData[i / 4] = imageData[i] > 128 ? 1 : 0;
+        }
+    }
+
+    // Particle Class
+    class Particle {
+        constructor() {
+            this.reset();
+            // Randomize starting Y so they don't all spawn in a straight line at first
+            this.y = Math.random() * height; 
+        }
+
+        reset() {
+            this.x = Math.random() * width;
+            this.y = height + 10; // Spawn just below the screen
+            this.vx = (Math.random() - 0.5) * 1.5; // Slight horizontal drift
+            this.vy = -(Math.random() * 3 + 2); // Wind tunnel: moving UP
+            this.life = Math.random(); // For flickering effects
+        }
+
+        update() {
+            // Predict next position
+            let nextX = this.x + this.vx;
+            let nextY = this.y + this.vy;
+
+            // Check boundaries
+            if (nextY < 0 || nextX < 0 || nextX > width) {
+                this.reset();
+                return;
+            }
+
+            // Step 2: The Collision Logic (Flowing around the 8)
+            // Convert coordinates to an index in our mask array
+            let maskIndex = Math.floor(nextY) * width + Math.floor(nextX);
+
+            if (maskData[maskIndex] === 1) {
+                // We hit the invisible 8! Divert the particle.
+                // Push them left or right depending on which half of the screen they are on
+                if (this.x < width / 2) {
+                    this.vx -= 0.5; // Push left
+                } else {
+                    this.vx += 0.5; // Push right
+                }
+                // Slow down vertical movement slightly when hitting the boundary
+                this.vy *= 0.95; 
+            } else {
+                // Normal wind tunnel behavior: slowly drift back to center upward flow
+                this.vx *= 0.98;
+            }
+
+            // Apply movement
+            this.x += this.vx;
+            this.y += this.vy;
+        }
+
+        draw() {
+            // Step 3: The Neon Green Styling
+            ctx.fillStyle = `rgba(0, 255, 0, ${0.4 + this.life * 0.4})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    // Initialize particles
+    function initParticles() {
+        particles = [];
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            particles.push(new Particle());
+        }
+    }
+
+    // Main animation loop
+    function animate() {
+        // Instead of clearRect, we fill with a highly transparent black.
+        // This creates the gorgeous "fluid trail" effect.
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        ctx.fillRect(0, 0, width, height);
+
+        // Makes the green colors stack and glow like neon/matrix
+        ctx.globalCompositeOperation = 'lighter';
+
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
+
+        // Reset composite operation for the background fade next frame
+        ctx.globalCompositeOperation = 'source-over';
+
+        requestAnimationFrame(animate);
+    }
+
+    // Start everything up
+    window.addEventListener('resize', resize);
+    resize();
+    initParticles();
+    animate();
+
+</script>
+</body>
+</html>
 
