@@ -20,6 +20,24 @@
     </style>
 </head>
 <body>
+<audio id="bg-music" src="beat.mp3" loop></audio>
+
+<div id="start-text" style="
+    position: absolute; 
+    bottom: 40px; 
+    width: 100%; 
+    text-align: center; 
+    color: #00FFFF; 
+    font-family: 'Arial Black', sans-serif; 
+    font-size: 14px; 
+    letter-spacing: 4px; 
+    opacity: 0.5; 
+    transition: opacity 1s ease-out; 
+    pointer-events: none;">
+    TAP ANYWHERE TO INITIALIZE AUDIO
+</div>
+
+<canvas id="fluidCanvas"></canvas>
 
 <canvas id="fluidCanvas"></canvas>
 
@@ -30,101 +48,101 @@
     let width, height;
     let maskData = [];
     let particles = [];
-    const PARTICLE_COUNT = 1500; // Adjust for performance vs density
+    const PARTICLE_COUNT = 2500; // Bumped up for a massive fiber-optic flow
 
-    // Resize canvas to fill the screen
     function resize() {
         width = canvas.width = window.innerWidth;
         height = canvas.height = window.innerHeight;
         createMask();
     }
 
-    // Step 1: Create the invisible "8" mask
     function createMask() {
-        // Create an off-screen canvas to draw the 8
         const maskCanvas = document.createElement('canvas');
         maskCanvas.width = width;
         maskCanvas.height = height;
         const maskCtx = maskCanvas.getContext('2d');
 
-        // Draw a massive "8" in the center
         maskCtx.fillStyle = '#FFFFFF';
-        maskCtx.font = `900 ${Math.min(width, height) * 0.8}px sans-serif`;
+        // Keeps the loops of the 8 open and clear
+        maskCtx.font = `900 ${Math.min(width, height) * 0.65}px "Arial Black", Impact, sans-serif`;
         maskCtx.textAlign = 'center';
         maskCtx.textBaseline = 'middle';
         maskCtx.fillText('8', width / 2, height / 2);
 
-        // Extract pixel data so we know where the "8" is solid
         const imageData = maskCtx.getImageData(0, 0, width, height).data;
         maskData = new Uint8Array(width * height);
         
-        // Simplify the data: 1 if it's the "8", 0 if empty space
         for (let i = 0; i < imageData.length; i += 4) {
             maskData[i / 4] = imageData[i] > 128 ? 1 : 0;
         }
     }
 
-    // Particle Class
     class Particle {
         constructor() {
             this.reset();
-            // Randomize starting Y so they don't all spawn in a straight line at first
             this.y = Math.random() * height; 
+            this.prevX = this.x;
+            this.prevY = this.y;
         }
 
         reset() {
             this.x = Math.random() * width;
-            this.y = height + 10; // Spawn just below the screen
-            this.vx = (Math.random() - 0.5) * 1.5; // Slight horizontal drift
-            this.vy = -(Math.random() * 3 + 2); // Wind tunnel: moving UP
-            this.life = Math.random(); // For flickering effects
+            this.y = height + 20; 
+            this.prevX = this.x;
+            this.prevY = this.y;
+            this.vx = (Math.random() - 0.5) * 1.5; 
+            this.vy = -(Math.random() * 3 + 2); // Faster upward flow
+            this.life = Math.random(); 
+            this.turbulence = Math.random() * 100; 
         }
 
         update() {
-            // Predict next position
+            // Store previous position for the motion blur trail
+            this.prevX = this.x;
+            this.prevY = this.y;
+
+            this.vx += Math.sin((this.y * 0.02) + this.turbulence) * 0.05;
+
             let nextX = this.x + this.vx;
             let nextY = this.y + this.vy;
 
-            // Check boundaries
             if (nextY < 0 || nextX < 0 || nextX > width) {
                 this.reset();
                 return;
             }
 
-            // Step 2: The Collision Logic (Flowing around the 8)
-            // Convert coordinates to an index in our mask array
             let maskIndex = Math.floor(nextY) * width + Math.floor(nextX);
 
             if (maskData[maskIndex] === 1) {
-                // We hit the invisible 8! Divert the particle.
-                // Push them left or right depending on which half of the screen they are on
                 if (this.x < width / 2) {
-                    this.vx -= 0.5; // Push left
+                    this.vx -= 1.0; // Harder push around the 8
                 } else {
-                    this.vx += 0.5; // Push right
+                    this.vx += 1.0; 
                 }
-                // Slow down vertical movement slightly when hitting the boundary
-                this.vy *= 0.95; 
+                this.vy *= 0.85; 
             } else {
-                // Normal wind tunnel behavior: slowly drift back to center upward flow
-                this.vx *= 0.98;
+                this.vx *= 0.95;
             }
 
-            // Apply movement
             this.x += this.vx;
             this.y += this.vy;
+            this.turbulence += 0.05; 
         }
 
         draw() {
-            // Step 3: The Tiffany Blue Styling
-            ctx.fillStyle = `rgba(10, 186, 181, ${0.4 + this.life * 0.4})`;
+            // THE PRO TRICK: Drawing lines instead of dots for that long-exposure look
+            // Using Pure Electric Cyan for maximum neon glow
+            ctx.strokeStyle = `rgba(0, 255, 255, ${0.1 + this.life * 0.6})`;
+            ctx.lineWidth = 2.5; 
+            ctx.lineCap = 'round';
+            
             ctx.beginPath();
-            ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.moveTo(this.prevX, this.prevY);
+            ctx.lineTo(this.x, this.y);
+            ctx.stroke();
         }
     }
 
-    // Initialize particles
     function initParticles() {
         particles = [];
         for (let i = 0; i < PARTICLE_COUNT; i++) {
@@ -132,14 +150,12 @@
         }
     }
 
-    // Main animation loop
     function animate() {
-        // Instead of clearRect, we fill with a highly transparent black.
-        // This creates the gorgeous "fluid trail" effect.
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        // Slightly darker fade to make the neon lines pop intensely
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
         ctx.fillRect(0, 0, width, height);
 
-        // Makes the green colors stack and glow like neon/matrix
+        // Additive blending makes overlapping cyan turn brilliant white
         ctx.globalCompositeOperation = 'lighter';
 
         particles.forEach(p => {
@@ -147,19 +163,38 @@
             p.draw();
         });
 
-        // Reset composite operation for the background fade next frame
         ctx.globalCompositeOperation = 'source-over';
-
         requestAnimationFrame(animate);
     }
 
-    // Start everything up
     window.addEventListener('resize', resize);
     resize();
     initParticles();
     animate();
+        // --- HIDDEN PLAY BUTTON LOGIC ---
+    let audioStarted = false;
+    const bgMusic = document.getElementById('bg-music');
+    const startText = document.getElementById('start-text');
+
+    // Make the entire window listen for a tap or click
+    window.addEventListener('pointerdown', () => {
+        if (!audioStarted) {
+            // Start the music
+            bgMusic.play();
+            audioStarted = true;
+            
+            // Fade out the text cinematically
+            startText.style.opacity = '0';
+            
+            // Optional Pro-Touch: Make the fluid surge temporarily when the beat drops!
+            particles.forEach(p => {
+                p.vy -= (Math.random() * 10 + 5); // Huge upward surge
+            });
+        }
+    });
 
 </script>
+
 <div style="
     background: #0a0a0a; 
     border: 2px solid #0ABAB5; 
