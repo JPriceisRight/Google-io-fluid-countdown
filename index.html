@@ -3,166 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google I/O Countdown - Invisible 8</title>
+    <title>Google I/O Countdown - Audio Reactive 8</title>
     <style>
-        /* The Absolute Black Background */
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
             background-color: #000000;
-            overflow: hidden;
+            overflow: hidden; font-family: sans-serif;
         }
-        canvas {
-            display: block;
+        canvas { display: block; width: 100%; height: 100%; }
+        #ui-text {
+            position: absolute; bottom: 30px; width: 100%;
+            text-align: center; color: rgba(0, 255, 255, 0.7);
+            font-size: 14px; letter-spacing: 4px;
+            pointer-events: none; z-index: 10;
         }
     </style>
 </head>
 <body>
-<audio id="bg-music" src="beat.mp3" loop></audio>
 
-<div id="start-text" style="
-    position: absolute; 
-    bottom: 40px; 
-    width: 100%; 
-    text-align: center; 
-    color: #00FFFF; 
-    font-family: 'Arial Black', sans-serif; 
-    font-size: 14px; 
-    letter-spacing: 4px; 
-    opacity: 0.5; 
-    transition: opacity 1s ease-out; 
-    pointer-events: none;">
-    TAP ANYWHERE TO INITIALIZE AUDIO
-</div>
-
-<canvas id="fluidCanvas"></canvas>
-
+<div id="ui-text">TAP ANYWHERE TO INITIALIZE AUDIO</div>
 <canvas id="fluidCanvas"></canvas>
 
 <script>
     const canvas = document.getElementById('fluidCanvas');
     const ctx = canvas.getContext('2d');
 
-    let width, height;
+    let width, height, dpr;
     let maskData = [];
     let particles = [];
-    const PARTICLE_COUNT = 2000; 
-    let frameCount = 0; 
+    const PARTICLE_COUNT = 1500; 
 
+    // --- AUDIO API VARIABLES ---
+    let audioContext, analyser, dataArray;
+    let isAudioPlaying = false;
+    let audioIntensity = 0;
+
+    let pointer = { x: -1000, y: -1000, active: false };
+
+    // Handle touch/mouse for interaction and starting audio
+    function handleInteraction(x, y) {
+        pointer.x = x * dpr; // Scale touch to retina pixels
+        pointer.y = y * dpr;
+        pointer.active = true;
+
+        if (!isAudioPlaying) {
+            initAudio();
+        }
+    }
+
+    window.addEventListener('mousemove', (e) => handleInteraction(e.clientX, e.clientY));
+    window.addEventListener('mouseout', () => pointer.active = false);
+    window.addEventListener('touchstart', (e) => handleInteraction(e.touches[0].clientX, e.touches[0].clientY));
+    window.addEventListener('touchmove', (e) => handleInteraction(e.touches[0].clientX, e.touches[0].clientY));
+    window.addEventListener('touchend', () => pointer.active = false);
+
+    // --- THE RETINA FIX ---
     function resize() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
+        dpr = window.devicePixelRatio || 1;
+        width = window.innerWidth;
+        height = window.innerHeight;
+        
+        // Scale canvas internal resolution up, keep CSS size the same
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        
         createMask();
     }
 
     function createMask() {
         const maskCanvas = document.createElement('canvas');
-        maskCanvas.width = width;
-        maskCanvas.height = height;
+        maskCanvas.width = canvas.width;
+        maskCanvas.height = canvas.height;
         const maskCtx = maskCanvas.getContext('2d');
 
         maskCtx.fillStyle = '#FFFFFF';
-        // The physics mask remains solid to push particles around it smoothly
-        maskCtx.font = `900 ${Math.min(width, height) * 0.35}px "Arial Black", Impact, sans-serif`;
+        maskCtx.font = `900 ${Math.min(canvas.width, canvas.height) * 0.8}px sans-serif`;
         maskCtx.textAlign = 'center';
         maskCtx.textBaseline = 'middle';
-        maskCtx.fillText('8', width / 2, height / 2);
+        maskCtx.fillText('8', canvas.width / 2, canvas.height / 2);
 
-        const imageData = maskCtx.getImageData(0, 0, width, height).data;
-        maskData = new Uint8Array(width * height);
+        const imageData = maskCtx.getImageData(0, 0, canvas.width, canvas.height).data;
+        maskData = new Uint8Array(canvas.width * canvas.height);
         
         for (let i = 0; i < imageData.length; i += 4) {
             maskData[i / 4] = imageData[i] > 128 ? 1 : 0;
         }
     }
 
+    // --- THE AUDIO SETUP ---
+    function initAudio() {
+        isAudioPlaying = true;
+        document.getElementById('ui-text').style.display = 'none'; // Hide text
+
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        const audio = new Audio();
+        audio.src = '808beat-4GSynth.mp3'; // <-- PUT YOUR MP3 NAME HERE
+        audio.crossOrigin = "anonymous";
+        audio.play();
+
+        const source = audioContext.createMediaElementSource(audio);
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+    }
+
     class Particle {
         constructor() {
-            this.direction = Math.random() > 0.5 ? 'up' : 'down';
             this.reset();
-            this.x = Math.random() * width; 
-            this.y = Math.random() * height;
-            this.prevX = this.x;
-            this.prevY = this.y;
+            this.y = Math.random() * canvas.height; 
         }
 
         reset() {
-            this.x = Math.random() * width; 
-            this.prevX = this.x;
-            
-            if (this.direction === 'down') {
-                this.y = -20; 
-                this.baseVy = Math.random() * 2 + 2; 
-            } else {
-                this.y = height + 20; 
-                this.baseVy = -(Math.random() * 2 + 2); 
-            }
-            
-            this.prevY = this.y;
-            this.vx = 0; 
-            this.vy = this.baseVy; 
+            this.x = Math.random() * canvas.width;
+            this.y = -Math.random() * 50; 
+            this.vx = (Math.random() - 0.5) * 1.5; 
+            this.vy = (Math.random() * 3 + 2); 
             this.life = Math.random(); 
-            
-            this.phase = Math.random() * Math.PI * 2; 
-            this.amplitude = Math.random() * 15 + 5; 
-            this.frequency = Math.random() * 0.01 + 0.005; 
         }
 
         update() {
-            this.prevX = this.x;
-            this.prevY = this.y;
-
-            this.vx = Math.cos(this.y * this.frequency + this.phase) * this.amplitude * 0.05;
-
-            let nextX = this.x + this.vx;
-            let nextY = this.y + this.vy;
-
-            if (this.direction === 'down' && nextY > height + 20) { this.reset(); return; }
-            if (this.direction === 'up' && nextY < -20) { this.reset(); return; }
-            if (nextX < -20 || nextX > width + 20) { this.reset(); return; }
-
-            let checkX = Math.floor(nextX);
-            let checkY = Math.floor(nextY);
+            // Add audio intensity to velocity so they fall faster on the beat
+            let speedBoost = audioIntensity * 0.05;
             
-            if (checkX >= 0 && checkX < width && checkY >= 0 && checkY < height) {
-                let maskIndex = checkY * width + checkX;
+            let nextX = this.x + this.vx;
+            let nextY = this.y + this.vy + speedBoost;
 
-                if (maskData[maskIndex] === 1) {
-                    if (this.x < width / 2) {
-                        this.vx -= 3.5; 
-                    } else {
-                        this.vx += 3.5; 
-                    }
-                    this.vy *= 0.8; 
+            if (nextY > canvas.height || nextX < 0 || nextX > canvas.width) {
+                this.reset();
+                this.y = -10; 
+                return;
+            }
+
+            let maskIndex = Math.floor(nextY) * canvas.width + Math.floor(nextX);
+
+            if (maskData[maskIndex] === 1) {
+                if (this.x < canvas.width / 2) {
+                    this.vx -= 0.5; 
                 } else {
-                    if (this.direction === 'down') {
-                        this.vy = Math.min(this.vy * 1.05, this.baseVy);
-                    } else {
-                        this.vy = Math.max(this.vy * 1.05, this.baseVy);
-                    }
+                    this.vx += 0.5; 
+                }
+                this.vy *= 0.95; 
+            } else {
+                this.vx *= 0.98;
+            }
+
+            if (pointer.active) {
+                let dx = this.x - pointer.x;
+                let dy = this.y - pointer.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                let radius = 150 * dpr; // Scale touch radius for iPad
+
+                if (distance < radius) {
+                    let forceX = dx / distance;
+                    let forceY = dy / distance;
+                    let pushPower = (radius - distance) / radius;
+                    
+                    this.vx += forceX * pushPower * 2;
+                    this.vy += forceY * pushPower * 2;
                 }
             }
 
             this.x += this.vx;
-            this.y += this.vy;
-            this.phase += 0.05; 
+            this.y += this.vy + speedBoost;
         }
 
         draw() {
-            ctx.strokeStyle = `rgba(0, 255, 255, ${0.4 + this.life * 0.6})`;
-            ctx.lineWidth = 1.5; 
-            ctx.lineCap = 'round';
-            
-            ctx.beginPath();
-            ctx.moveTo(this.prevX, this.prevY);
-            ctx.lineTo(this.x, this.y);
-            ctx.stroke();
+            // Audio makes the neon green brighter and particles slightly larger
+            let brightness = 0.4 + (audioIntensity * 0.005);
+            let size = 2 * dpr + (audioIntensity * 0.01);
 
-            ctx.fillStyle = `rgba(0, 255, 255, ${0.8 + this.life * 0.2})`;
+            ctx.fillStyle = `rgba(0, 255, 0, ${brightness + this.life * 0.4})`;
             ctx.beginPath();
-            ctx.arc(this.x, this.y, 1.5, 0, Math.PI * 2);
+            ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
             ctx.fill();
         }
     }
@@ -175,29 +191,19 @@
     }
 
     function animate() {
-        frameCount++; 
-        
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.fillRect(0, 0, width, height);
+        // Analyze audio if playing
+        if (isAudioPlaying && analyser) {
+            analyser.getByteFrequencyData(dataArray);
+            // Get average of lower frequencies (bass)
+            let sum = 0;
+            for(let i = 0; i < 10; i++) {
+                sum += dataArray[i];
+            }
+            audioIntensity = sum / 10; // 0 to 255
+        }
 
-        // --- THE HOLLOWED-OUT NEON '8' ---
-        let pulseAlpha = 0.2 + ((Math.sin(frameCount * 0.05) + 1) / 2) * 0.65;
-        
-        ctx.save();
-        // Changed to strokeStyle for an outline
-        ctx.strokeStyle = `rgba(137, 207, 240, ${pulseAlpha})`; 
-        // Lowered blur slightly so it doesn't bleed into the black dots
-        ctx.shadowColor = `rgba(137, 207, 240, ${pulseAlpha})`; 
-        ctx.shadowBlur = 10; 
-        ctx.lineWidth = 6; // Thickness of the neon outline
-
-        ctx.font = `900 ${Math.min(width, height) * 0.35}px "Arial Black", Impact, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        // Using strokeText to make it hollow!
-        ctx.strokeText('8', width / 2, height / 2);
-        ctx.restore(); 
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; // Darker fade for sharper trails
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.globalCompositeOperation = 'lighter';
 
@@ -207,6 +213,7 @@
         });
 
         ctx.globalCompositeOperation = 'source-over';
+
         requestAnimationFrame(animate);
     }
 
@@ -215,285 +222,6 @@
     initParticles();
     animate();
 
-    // --- HIDDEN PLAY BUTTON LOGIC ---
-    let audioStarted = false;
-    const bgMusic = document.getElementById('bg-music');
-    const startText = document.getElementById('start-text');
-
-    window.addEventListener('pointerdown', () => {
-        if (!audioStarted && bgMusic) {
-            bgMusic.play();
-            audioStarted = true;
-            if(startText) startText.style.opacity = '0';
-            
-            particles.forEach(p => {
-                if (p.direction === 'down') {
-                    p.vy += (Math.random() * 10 + 5); 
-                } else {
-                    p.vy -= (Math.random() * 10 + 5); 
-                }
-            });
-        }
-    });
 </script>
-
-
-
-
-<div style="
-    background: #0a0a0a; 
-    border: 2px solid #0ABAB5; 
-    border-radius: 15px; 
-    padding: 30px; 
-    margin: 30px 0; 
-    font-family: sans-serif; 
-    color: white; 
-    box-shadow: 0 0 15px rgba(10, 186, 181, 0.4), 0 0 40px rgba(10, 186, 181, 0.2);
-    display: flex;
-    flex-direction: column;
-    gap: 15px;">
-    
-    <h2 style="
-        margin: 0; 
-        color: #0ABAB5; 
-        text-transform: uppercase; 
-        letter-spacing: 2px;
-        text-shadow: 0 0 15px rgba(10, 186, 181, 0.8);">
-        Google I/O '26 Challenge: The Invisible 8
-    </h2>
-    
-    <p style="margin: 0; line-height: 1.6; color: #e0e0e0; font-size: 16px;">
-        An interactive, high-velocity fluid dynamics simulation built for the "Code the Countdown" global challenge. 
-        Featuring an automated Tiffany Blue wind tunnel flowing around a hidden boundary—created with AI Studio.
-    </p>
-
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <span style="
-            background: rgba(10, 186, 181, 0.1); 
-            border: 1px solid #0ABAB5; 
-            padding: 6px 12px; 
-            border-radius: 5px; 
-            font-size: 12px; 
-            color: #0ABAB5; 
-            font-weight: bold; 
-            text-shadow: 0 0 8px rgba(10, 186, 181, 0.6);">
-            WEBGL / PHYSICS
-        </span>
-        <span style="
-            background: rgba(10, 186, 181, 0.1); 
-            border: 1px solid #0ABAB5; 
-            padding: 6px 12px; 
-            border-radius: 5px; 
-            font-size: 12px; 
-            color: #0ABAB5; 
-            font-weight: bold; 
-            text-shadow: 0 0 8px rgba(10, 186, 181, 0.6);">
-            AI ASSISTED
-        </span>
-    </div>
-
-    <a href="https://your-fluid-8-link.netlify.app" target="_blank" style="
-        display: inline-block; 
-        background: #0ABAB5; 
-        color: #000; 
-        text-decoration: none; 
-        padding: 14px 28px; 
-        border-radius: 8px; 
-        font-weight: 900; 
-        letter-spacing: 1px;
-        text-align: center;
-        box-shadow: 0 0 20px rgba(10, 186, 181, 0.6);
-        margin-top: 10px;
-        text-transform: uppercase;">
-        VIEW LIVE PROJECT →
-        
-        <script>
-    const canvas = document.getElementById('fluidCanvas');
-    const ctx = canvas.getContext('2d');
-
-    let width, height;
-    let maskData = [];
-    let particles = [];
-    const PARTICLE_COUNT = 2000; // Increased density for two streams
-
-    function resize() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-        createMask();
-    }
-
-    function createMask() {
-        const maskCanvas = document.createElement('canvas');
-        maskCanvas.width = width;
-        maskCanvas.height = height;
-        const maskCtx = maskCanvas.getContext('2d');
-
-        maskCtx.fillStyle = '#FFFFFF';
-        // Keeps the "8" size distinct and cinematic
-        maskCtx.font = `900 ${Math.min(width, height) * 0.35}px "Arial Black", Impact, sans-serif`;
-        maskCtx.textAlign = 'center';
-        maskCtx.textBaseline = 'middle';
-        maskCtx.fillText('8', width / 2, height / 2);
-
-        const imageData = maskCtx.getImageData(0, 0, width, height).data;
-        maskData = new Uint8Array(width * height);
-        
-        for (let i = 0; i < imageData.length; i += 4) {
-            maskData[i / 4] = imageData[i] > 128 ? 1 : 0;
-        }
-    }
-
-    class Particle {
-        constructor() {
-            // FLIP A COIN: 50% chance to go UP, 50% chance to go DOWN
-            this.direction = Math.random() > 0.5 ? 'up' : 'down';
-            this.reset();
-            // Scatter randomly across the screen at start so it isn't empty
-            this.x = Math.random() * width; 
-            this.y = Math.random() * height;
-            this.prevX = this.x;
-            this.prevY = this.y;
-        }
-
-        reset() {
-            this.x = Math.random() * width; 
-            this.prevX = this.x;
-            
-            if (this.direction === 'down') {
-                this.y = -20; // Spawn top
-                this.baseVy = Math.random() * 2 + 2; // Positive speed (falling)
-            } else {
-                this.y = height + 20; // Spawn bottom
-                this.baseVy = -(Math.random() * 2 + 2); // Negative speed (rising)
-            }
-            
-            this.prevY = this.y;
-            this.vx = 0; 
-            this.vy = this.baseVy; 
-            this.life = Math.random(); 
-            
-            // Math for the Wavy Data Motion (Applied to X axis now)
-            this.phase = Math.random() * Math.PI * 2; 
-            this.amplitude = Math.random() * 15 + 5; 
-            this.frequency = Math.random() * 0.01 + 0.005; 
-        }
-
-        update() {
-            this.prevX = this.x;
-            this.prevY = this.y;
-
-            // Apply Sine Wave motion to the X axis so it waves side-to-side as it moves vertically
-            this.vx = Math.cos(this.y * this.frequency + this.phase) * this.amplitude * 0.05;
-
-            let nextX = this.x + this.vx;
-            let nextY = this.y + this.vy;
-
-            // Reset if they go off their respective edges
-            if (this.direction === 'down' && nextY > height + 20) { this.reset(); return; }
-            if (this.direction === 'up' && nextY < -20) { this.reset(); return; }
-            if (nextX < -20 || nextX > width + 20) { this.reset(); return; }
-
-            // Safe boundary check
-            let checkX = Math.floor(nextX);
-            let checkY = Math.floor(nextY);
-            
-            if (checkX >= 0 && checkX < width && checkY >= 0 && checkY < height) {
-                let maskIndex = checkY * width + checkX;
-
-                if (maskData[maskIndex] === 1) {
-                    // Divert AROUND the invisible 8
-                    if (this.x < width / 2) {
-                        this.vx -= 3.5; // Push left
-                    } else {
-                        this.vx += 3.5; // Push right
-                    }
-                    this.vy *= 0.8; // Slow down slightly on impact
-                } else {
-                    // Gently return to normal vertical speed
-                    if (this.direction === 'down') {
-                        this.vy = Math.min(this.vy * 1.05, this.baseVy);
-                    } else {
-                        this.vy = Math.max(this.vy * 1.05, this.baseVy);
-                    }
-                }
-            }
-
-            this.x += this.vx;
-            this.y += this.vy;
-            this.phase += 0.05; 
-        }
-
-        draw() {
-            // Max Brightness Cyan Trails
-            ctx.strokeStyle = `rgba(0, 255, 255, ${0.4 + this.life * 0.6})`;
-            ctx.lineWidth = 1.5; 
-            ctx.lineCap = 'round';
-            
-            ctx.beginPath();
-            ctx.moveTo(this.prevX, this.prevY);
-            ctx.lineTo(this.x, this.y);
-            ctx.stroke();
-
-            // Bright Glowing Cyan "Data Node"
-            ctx.fillStyle = `rgba(0, 255, 255, ${0.8 + this.life * 0.2})`;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, 1.5, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-
-    function initParticles() {
-        particles = [];
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-            particles.push(new Particle());
-        }
-    }
-
-    function animate() {
-        // High contrast dark fade
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.fillRect(0, 0, width, height);
-
-        ctx.globalCompositeOperation = 'lighter';
-
-        particles.forEach(p => {
-            p.update();
-            p.draw();
-        });
-
-        ctx.globalCompositeOperation = 'source-over';
-        requestAnimationFrame(animate);
-    }
-
-    window.addEventListener('resize', resize);
-    resize();
-    initParticles();
-    animate();
-
-    // --- HIDDEN PLAY BUTTON LOGIC ---
-    let audioStarted = false;
-    const bgMusic = document.getElementById('bg-music');
-    const startText = document.getElementById('start-text');
-
-    window.addEventListener('pointerdown', () => {
-        if (!audioStarted && bgMusic) {
-            bgMusic.play();
-            audioStarted = true;
-            if(startText) startText.style.opacity = '0';
-            
-            // Surge in BOTH directions when the beat drops!
-            particles.forEach(p => {
-                if (p.direction === 'down') {
-                    p.vy += (Math.random() * 10 + 5); 
-                } else {
-                    p.vy -= (Math.random() * 10 + 5); 
-                }
-            });
-        }
-    });
-</script>
-
-    </a>
-</div>
 </body>
 </html>
