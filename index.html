@@ -7,18 +7,16 @@
     <title>SELF QUEST</title>
 
 ```
-<!-- App name for home screen -->
 <meta name="apple-mobile-web-app-title" content="Self Quest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#000000">
 
-<!-- Inline SVG favicon — glowing 8 in cyan -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23060d1f'/%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='50%25' r='60%25'%3E%3Cstop offset='0%25' stop-color='%230a1a3a'/%3E%3Cstop offset='100%25' stop-color='%23000408'/%3E%3C/radialGradient%3E%3Cfilter id='f'%3E%3CfeGaussianBlur stdDeviation='8'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='512' height='512' rx='80' fill='url(%23g)'/%3E%3Ccircle cx='256' cy='256' r='230' fill='none' stroke='rgba(0%2C180%2C255%2C0.4)' stroke-width='1.5'/%3E%3Ctext x='256' y='318' font-size='320' font-weight='900' font-family='Arial Black' text-anchor='middle' fill='none' stroke='%2300ccff' stroke-width='3' filter='url(%23f)'%3E8%3C/text%3E%3Ctext x='256' y='318' font-size='320' font-weight='900' font-family='Arial Black' text-anchor='middle' fill='none' stroke='%2300eeff' stroke-width='2.5'%3E8%3C/text%3E%3Ccircle cx='256' cy='256' r='6' fill='%2300ff44'/%3E%3C/svg%3E">
 
-<!-- Apple touch icon — same SVG as PNG-equivalent for home screen -->
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23060d1f'/%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='50%25' r='60%25'%3E%3Cstop offset='0%25' stop-color='%230a1a3a'/%3E%3Cstop offset='100%25' stop-color='%23000408'/%3E%3C/radialGradient%3E%3Cfilter id='f'%3E%3CfeGaussianBlur stdDeviation='8'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='512' height='512' rx='80' fill='url(%23g)'/%3E%3Ccircle cx='256' cy='256' r='220' fill='none' stroke='rgba(0%2C180%2C255%2C0.5)' stroke-width='2'/%3E%3Ccircle cx='256' cy='26' r='4' fill='%2300ffff'/%3E%3Ccircle cx='486' cy='256' r='4' fill='%2300ffff'/%3E%3Ccircle cx='256' cy='486' r='4' fill='%2300ffff'/%3E%3Ccircle cx='26' cy='256' r='4' fill='%2300ffff'/%3E%3Ctext x='256' y='318' font-size='320' font-weight='900' font-family='Arial Black' text-anchor='middle' fill='none' stroke='%2300ccff' stroke-width='3' filter='url(%23f)'%3E8%3C/text%3E%3Ctext x='256' y='318' font-size='320' font-weight='900' font-family='Arial Black' text-anchor='middle' fill='none' stroke='%2300eeff' stroke-width='2.5'%3E8%3C/text%3E%3Ccircle cx='256' cy='256' r='8' fill='%2300ff44'/%3E%3Ccircle cx='256' cy='256' r='3' fill='%23ffffff'/%3E%3C/svg%3E">
+
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body, html {
@@ -52,7 +50,8 @@
         font-size: 13px; letter-spacing: 3px;
         pointer-events: none; z-index: 10;
         width: 85%; line-height: 1.8;
-        transition: color 2s, opacity 2s; text-transform: uppercase;
+        transition: color 2s, opacity 2s;
+        text-transform: uppercase;
     }
     #controls {
         position: absolute; bottom: 65px; left: 50%;
@@ -94,8 +93,8 @@
         color: rgba(0,210,255,0.8);
         font-size: 13px; letter-spacing: 5px;
         text-transform: uppercase;
-        text-align: center; line-height: 3;
-        white-space: nowrap;
+        text-align: center;
+        line-height: 3.2;
     }
     #replay-btn {
         margin-top: 40px; background: transparent;
@@ -158,13 +157,9 @@ let exploding = false;
 let explosionTime = 0;
 const EXPLOSION_DURATION = 3000;
 let idleGlowTime = 0;
-let slowFactor = 1; // rain speed multiplier — reduces after 2 mins
 let calmMode = false;
 let pointer = { x: -9999, y: -9999, active: false };
 
-// Two separate off-screen canvases
-// maskCanvas = filled solid 8 (for particle collision)
-// holeCanvas = just the two inner loops filled black (for punching holes)
 let holeCanvas, holeCtx;
 
 const AFFIRMATIONS = [
@@ -239,39 +234,24 @@ function triggerExplosion() {
     const H = canvas.height;
 
     particles.forEach((p, i) => {
-        // Spawn from within the 8 shape — find a valid mask pixel
         let sx, sy, attempts = 0;
         do {
             sx = Math.floor(Math.random() * W);
             sy = Math.floor(Math.random() * H);
             attempts++;
         } while (maskData[sy * W + sx] !== 1 && attempts < 30);
-
-        // If no mask pixel found just use center
         if (attempts >= 30) { sx = cx; sy = cy; }
 
-        p.x = sx;
-        p.y = sy;
-
-        // Explode outward from center
-        const dx = sx - cx;
-        const dy = sy - cy;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        p.x = sx; p.y = sy;
+        const dx = sx - cx, dy = sy - cy;
+        const dist = Math.sqrt(dx*dx + dy*dy) || 1;
         const speed = Math.random() * 28 + 10;
+        p.vx = (dx/dist)*speed + (Math.random()-0.5)*6;
+        p.vy = (dy/dist)*speed + (Math.random()-0.5)*6;
 
-        p.vx = (dx / dist) * speed + (Math.random() - 0.5) * 6;
-        p.vy = (dy / dist) * speed + (Math.random() - 0.5) * 6;
-
-        // Alternate green shades for vibrancy
-        const greens = [
-            [0, 255, 60],
-            [0, 255, 120],
-            [80, 255, 80],
-            [0, 200, 80],
-            [120, 255, 0],
-        ];
-        p.color = [...greens[Math.floor(Math.random() * greens.length)]];
-        p.life = 0.8 + Math.random() * 0.2;
+        const greens = [[0,255,60],[0,255,120],[80,255,80],[0,200,80],[120,255,0]];
+        p.color = [...greens[Math.floor(Math.random()*greens.length)]];
+        p.life = 0.8 + Math.random()*0.2;
     });
 }
 
@@ -319,13 +299,10 @@ function resize() {
     canvas.width = window.innerWidth * dpr;
     canvas.height = window.innerHeight * dpr;
 
-    const W = canvas.width;
-    const H = canvas.height;
+    const W = canvas.width, H = canvas.height;
     const sz = Math.min(W, H) * 0.72;
-    const cx = W / 2;
-    const cy = H / 2;
+    const cx = W / 2, cy = H / 2;
 
-    // --- MASK CANVAS: solid filled 8 for particle collision ---
     const mc = document.createElement('canvas');
     mc.width = W; mc.height = H;
     const mctx = mc.getContext('2d');
@@ -337,20 +314,6 @@ function resize() {
     maskData = new Uint8Array(W * H);
     for (let i = 0; i < d.length; i += 4) maskData[i/4] = d[i] > 128 ? 1 : 0;
 
-    // --- HOLE CANVAS: use actual pixel data to find the true inner holes ---
-    // Render the 8 with even-odd fill rule to get only the hollow interior
-    // We detect pixels that are BLACK inside the bounding box of the 8
-    // (i.e. surrounded by white on all sides = inside a loop)
-    holeCanvas = document.createElement('canvas');
-    holeCanvas.width = W; holeCanvas.height = H;
-    holeCtx = holeCanvas.getContext('2d');
-
-    // Draw the 8 outline using even-odd so inner areas are transparent
-    // Then flood-fill the interior pixels black
-    // Simpler: draw solid white 8, then draw it again with destination-out
-    // to punch holes using the font's own shape
-
-    // Step 1: draw solid 8 in white
     const mc2 = document.createElement('canvas');
     mc2.width = W; mc2.height = H;
     const mc2ctx = mc2.getContext('2d');
@@ -358,38 +321,22 @@ function resize() {
     mc2ctx.font = `900 ${sz}px sans-serif`;
     mc2ctx.textAlign = 'center'; mc2ctx.textBaseline = 'middle';
     mc2ctx.fillText('8', cx, cy);
-
-    // Step 2: scan pixels — find interior holes (black pixels surrounded by the 8)
-    // A pixel is a "hole" if: it is black AND the 8 is solid (maskData=1) within ~stroke width
-    // Easier: render with strokeText only and detect interior via flood fill approach
-    // Most reliable: render 8 with white, shrink inward, XOR to get only the inner area
-
-    // Approach: draw solid 8, then draw it again smaller (eroded) in black
-    // This leaves just the stroke ring, making holes pure black
-    const erosion = sz * 0.04; // how thick the stroke appears
     mc2ctx.globalCompositeOperation = 'destination-out';
     mc2ctx.fillStyle = 'rgba(0,0,0,1)';
-    mc2ctx.font = `900 ${sz * 0.88}px sans-serif`; // slightly smaller = erodes inward
+    mc2ctx.font = `900 ${sz * 0.88}px sans-serif`;
     mc2ctx.textAlign = 'center'; mc2ctx.textBaseline = 'middle';
-    mc2ctx.fillText('8', cx, cy + sz * 0.004); // tiny offset keeps it centered
+    mc2ctx.fillText('8', cx, cy + sz * 0.004);
     mc2ctx.globalCompositeOperation = 'source-over';
 
-    // Step 3: invert — the eroded interior + outside = black holes on holeCanvas
-    // We only want interior holes, not the outside
-    // Draw the eroded mask as black on holeCanvas only where maskData = 0 (outside 8)
-    // Simplest: just draw the mc2 result (which shows only the ring) — 
-    // then fill INSIDE the eroded area black
-
-    // Final clean approach: holeCanvas gets black pixels where mc2 is transparent (holes)
-    // but only inside the 8 bounding area
+    holeCanvas = document.createElement('canvas');
+    holeCanvas.width = W; holeCanvas.height = H;
+    holeCtx = holeCanvas.getContext('2d');
     holeCtx.fillStyle = '#000';
-    holeCtx.fillRect(0, 0, W, H); // start all black
+    holeCtx.fillRect(0, 0, W, H);
     holeCtx.globalCompositeOperation = 'destination-out';
-    holeCtx.drawImage(mc2, 0, 0); // punch out the ring (white areas of mc2)
+    holeCtx.drawImage(mc2, 0, 0);
     holeCtx.globalCompositeOperation = 'source-over';
-    // Now holeCanvas = black everywhere EXCEPT where the ring stroke is
-    // But we only want to stamp holes INSIDE the 8 bounds
-    // Mask out the outside by drawing the solid 8 outline as destination-in
+
     const mc3 = document.createElement('canvas');
     mc3.width = W; mc3.height = H;
     const mc3ctx = mc3.getContext('2d');
@@ -422,28 +369,16 @@ class P {
         if (exploding) {
             const elapsed = performance.now() - explosionTime;
             const progress = Math.min(1, elapsed / EXPLOSION_DURATION);
-
-            // Add gravity during explosion so particles arc downward naturally
             this.vy += 0.3;
-            // Slow down over time
-            this.vx *= 0.97;
-            this.vy *= 0.97;
-
-            this.x += this.vx;
-            this.y += this.vy;
-
-            // Wrap sides
+            this.vx *= 0.97; this.vy *= 0.97;
+            this.x += this.vx; this.y += this.vy;
             if (this.x < 0) this.x = canvas.width;
             if (this.x > canvas.width) this.x = 0;
-
-            // Near end of explosion — smoothly transition velocity toward rain fall
             if (progress > 0.7) {
                 const t = (progress - 0.7) / 0.3;
                 this.vx += (0 - this.vx) * t * 0.05;
                 this.vy += (1.2 - this.vy) * t * 0.03;
             }
-
-            // Recycle particles that fall off bottom during explosion
             if (this.y > canvas.height + 20) {
                 this.x = Math.random() * canvas.width;
                 this.y = -Math.random() * 20;
@@ -453,8 +388,10 @@ class P {
             }
             return;
         }
+
         let nx = this.x + this.vx;
         let ny = this.y + this.vy + boost;
+
         if (ny > canvas.height) {
             this.x = Math.random() * canvas.width;
             this.y = -Math.random() * 20;
@@ -463,15 +400,15 @@ class P {
             this.color = rc();
             return;
         }
-
-        // Always maintain a minimum fall speed — reduced after 2 mins
-        const minFall = (calmMode ? 0.5 : 1.0) * slowFactor;
-        if (this.vy < minFall) this.vy = minFall;
         if (nx < 0 || nx > canvas.width) this.vx *= -0.5;
+
+        const minFall = calmMode ? 0.5 : 1.0;
+        if (this.vy < minFall) this.vy = minFall;
+
         const idx = Math.floor(ny) * canvas.width + Math.floor(nx);
         if (maskData[idx] === 1) {
             this.vx += this.x < canvas.width / 2 ? -0.5 : 0.5;
-            this.vy *= 0.97; // was 0.9 — much less slowdown on the 8
+            this.vy *= 0.97;
         } else {
             this.vx *= 0.98;
         }
@@ -481,8 +418,8 @@ class P {
             const r = 160 * dpr;
             if (dist < r && dist > 0) {
                 const f = (r - dist) / r;
-                this.vx += (dx/dist) * f * (calmMode ? 1.2 : 2.5);
-                this.vy += (dy/dist) * f * (calmMode ? 1.2 : 2.5);
+                this.vx += (dx/dist)*f*(calmMode ? 1.2 : 2.5);
+                this.vy += (dy/dist)*f*(calmMode ? 1.2 : 2.5);
             }
         }
         this.x += this.vx;
@@ -490,11 +427,11 @@ class P {
     }
     draw(intensity, pulse) {
         const [r, g, b] = this.color;
-        const a = Math.min(1, 0.4 + this.life * 0.45 + intensity * 0.005 + pulse * 0.3);
-        const sz = (1.0 + intensity * 0.008 + pulse * 0.8) * dpr;
+        const a = Math.min(1, 0.4 + this.life*0.45 + intensity*0.005 + pulse*0.3);
+        const sz = (1.0 + intensity*0.008 + pulse*0.8) * dpr;
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, sz, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, sz, 0, Math.PI*2);
         ctx.fill();
     }
 }
@@ -502,26 +439,20 @@ class P {
 function showAffirmation() {
     if (sessionComplete) return;
     const text = AFFIRMATIONS[affirmIndex % AFFIRMATIONS.length];
-
-    // Wait for a beat peak to appear — check audioIntensity
     const waitForBeat = () => {
         if (audioIntensity > 40 || audioMode === 'idle') {
-            // Fade in
             affirmationEl.style.transition = 'color 1.5s, opacity 1.5s';
             affirmationEl.style.opacity = '1';
             affirmationEl.style.color = calmMode
                 ? 'rgba(150,180,255,0.55)'
                 : 'rgba(0,220,255,0.65)';
             affirmationEl.textContent = text;
-
-            // Hold then fade out
             setTimeout(() => {
                 affirmationEl.style.transition = 'color 2.5s, opacity 2.5s';
                 affirmationEl.style.color = 'rgba(0,200,255,0)';
                 affirmationEl.style.opacity = '0';
             }, 6000);
         } else {
-            // Not on beat yet — wait a tick
             setTimeout(waitForBeat, 100);
         }
     };
@@ -538,6 +469,7 @@ function replayQuest() {
     audioMode = 'idle';
     hintEl.style.opacity = '1';
     affirmationEl.style.color = 'rgba(0,200,255,0)';
+    affirmationEl.style.opacity = '0';
     exploding = false;
     particles.forEach(p => p.reset());
 }
@@ -546,9 +478,9 @@ function triggerSessionComplete() {
     sessionComplete = true;
     completeEl.classList.add('show');
     particles.forEach(p => {
-        p.vx = (Math.random() - 0.5) * (calmMode ? 6 : 14);
-        p.vy = (Math.random() - 0.5) * (calmMode ? 6 : 14);
-        p.color = calmMode ? [80, 150, 220] : [0, 220, 255];
+        p.vx = (Math.random()-0.5)*(calmMode ? 6 : 14);
+        p.vy = (Math.random()-0.5)*(calmMode ? 6 : 14);
+        p.color = calmMode ? [80,150,220] : [0,220,255];
     });
     if (currentAudio) {
         setTimeout(() => {
@@ -567,14 +499,13 @@ function drawIdleEight() {
     const pulse = Math.sin(idleGlowTime) * 0.5 + 0.5;
     const sz = Math.min(canvas.width, canvas.height) * 0.72;
     ctx.save();
-    // Crisp outline only — no glow, no shadow
     ctx.globalAlpha = 0.25 + pulse * 0.35;
     ctx.strokeStyle = 'rgba(0,200,255,1)';
     ctx.lineWidth = 2.5 * dpr;
     ctx.shadowBlur = 0;
     ctx.font = `900 ${sz}px sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.strokeText('8', canvas.width / 2, canvas.height / 2);
+    ctx.strokeText('8', canvas.width/2, canvas.height/2);
     ctx.restore();
 }
 
@@ -584,8 +515,6 @@ function drawExplosionGlow() {
     if (progress < 1) {
         const sz = Math.min(canvas.width, canvas.height) * 0.72;
         ctx.save();
-
-        // First 0.2s — bright white/green flash like a shatter
         if (progress < 0.15) {
             const flashAlpha = (0.15 - progress) / 0.15;
             ctx.globalAlpha = flashAlpha * 0.9;
@@ -595,30 +524,25 @@ function drawExplosionGlow() {
             ctx.shadowBlur = 40 * dpr;
             ctx.font = `900 ${sz}px sans-serif`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.strokeText('8', canvas.width / 2, canvas.height / 2);
+            ctx.strokeText('8', canvas.width/2, canvas.height/2);
         }
-
-        // Rest of explosion — green fading outline
-        const alpha = Math.max(0, (1 - progress) * 0.4);
+        const alpha = Math.max(0, (1-progress)*0.4);
         ctx.globalAlpha = alpha;
         ctx.strokeStyle = 'rgba(0,255,80,1)';
         ctx.lineWidth = 2.5 * dpr;
         ctx.shadowColor = 'rgba(0,255,80,1)';
-        ctx.shadowBlur = 12 * dpr * (1 - progress);
+        ctx.shadowBlur = 12 * dpr * (1-progress);
         ctx.font = `900 ${sz}px sans-serif`;
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.strokeText('8', canvas.width / 2, canvas.height / 2);
+        ctx.strokeText('8', canvas.width/2, canvas.height/2);
         ctx.restore();
     } else {
         exploding = false;
-        // Smoothly recolor all particles to normal mix
         particles.forEach(p => { p.color = rc(); });
     }
 }
 
 function punchHoles() {
-    // Stamp the pre-rendered black hole ellipses over the particle layer
-    // This cuts the inner loops of the 8 back to pure black every frame
     ctx.globalCompositeOperation = 'source-over';
     ctx.drawImage(holeCanvas, 0, 0);
 }
@@ -647,39 +571,24 @@ function animate() {
     }
 
     idleTime += calmMode ? 0.008 : 0.018;
-    const pulse = audioMode === 'idle' ? (Math.sin(idleTime) * 0.5 + 0.5) : 0;
+    const pulse = audioMode === 'idle' ? (Math.sin(idleTime)*0.5+0.5) : 0;
+    const boost = audioIntensity*(calmMode?0.02:0.04) + pulse*(calmMode?0.15:0.3);
 
-    // After 2 minutes gradually slow the rain down for a calming wind-down
-    let sessionProgress = 0;
-    if (sessionStartTime) {
-        sessionProgress = Math.min(1, (performance.now() - sessionStartTime) / 1000 / SESSION_DURATION);
-    }
-    slowFactor = sessionProgress > 0.47
-        ? Math.max(0.4, 1 - (sessionProgress - 0.47) * 1.1)
-        : 1;
-
-    const boost = audioIntensity * (calmMode ? 0.02 : 0.04) * slowFactor + pulse * (calmMode ? 0.15 : 0.3) * slowFactor;
-
-    // Trail fade
     ctx.fillStyle = calmMode ? 'rgba(0,0,0,0.14)' : 'rgba(0,0,0,0.16)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Idle 8 glow — only before quest, disappears the moment Begin Quest is tapped
     if (audioMode === 'idle' && !exploding && !sessionComplete) {
         drawIdleEight();
     }
 
-    // Particles
     ctx.globalCompositeOperation = 'lighter';
     particles.forEach(p => { p.update(boost); p.draw(audioIntensity, pulse); });
     ctx.globalCompositeOperation = 'source-over';
 
-    // PUNCH BLACK HOLES — only in idle mode, 8 fully disappears once quest begins
     if (audioMode === 'idle' && !exploding && holeCanvas) {
         punchHoles();
     }
 
-    // Explosion glow
     if (exploding) {
         drawExplosionGlow();
     }
