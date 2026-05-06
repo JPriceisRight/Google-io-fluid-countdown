@@ -206,8 +206,8 @@ class P {
     constructor(scattered) { this.color = rc(); this.reset(); if (scattered) this.y = Math.random()*canvas.height; }
     reset() {
         this.x = Math.random()*canvas.width; this.y = -Math.random()*60;
-        this.vx = (Math.random()-0.5)*(calmMode ? 0.6 : 1.2);
-        this.vy = Math.random()*(calmMode ? 1.2 : 2.5) + (calmMode ? 0.8 : 1.5);
+        this.vx = (Math.random()-0.5)*(calmMode ? 0.2 : 0.4);
+this.vy = Math.random()*(calmMode ? 0.5 : 0.9) + (calmMode ? 0.2 : 0.4);
         this.life = Math.random(); this.color = rc();
     }
     update(boost) {
@@ -230,8 +230,8 @@ class P {
         const [r,g,b] = this.color;
         const a = Math.min(1, 0.35+this.life*0.4+intensity*0.004+pulse*0.3);
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
-        ctx.beginPath(); ctx.arc(this.x, this.y, (1.5+intensity*0.012+pulse*1.2)*dpr, 0, Math.PI*2); ctx.fill();
-    }
+        ctx.beginPath();ctx.arc(this.x, this.y, (0.7+intensity*0.006+pulse*0.6)*dpr, 0, Math.PI*2);
+
 }
 
 function showAffirmation() {
