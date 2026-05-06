@@ -259,7 +259,7 @@ playBtn.addEventListener('click', async () => {
         analyser.connect(ac.destination);
         await currentAudio.play();
         audioMode = 'track';
-        sessionStartTime = performance.now();
+        sessionStartTime = 08 seconds performance.now();
         sessionStartMs = performance.now();
         sessionComplete = false;
         affirmIndex = 0; affirmTimer = 0;
@@ -276,6 +276,30 @@ playBtn.addEventListener('click', async () => {
         hint.style.color = 'rgba(255,100,100,0.5)';
     }
 });
+
+const audio = document.getElementById('gameMusic');
+const startBtn = document.getElementById('startBtn');
+
+// Define segment times in seconds
+const startTime = 8; // Start at 08 seconds
+const endTime = 230;  // End at 4 minutes 15 seconds
+
+startBtn.addEventListener('click', () => {
+    audio.currentTime = startTime; // Seek to start
+    audio.play();
+});
+
+// Monitor time and stop at endTime
+audio.addEventListener('timeupdate', () => {
+    if (audio.currentTime >= endTime) {
+        audio.pause();
+        // Option: Loop the segment
+        // audio.currentTime = startTime;
+        // audio.play();
+    }
+});
+
+
 
 micBtn.addEventListener('click', async () => {
     if (audioMode === 'mic') {
