@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -444,13 +445,17 @@ class P {
             this.color = rc();
             return;
         }
+
+        // Always maintain a minimum fall speed so rain never dies out
+        const minFall = calmMode ? 0.5 : 1.0;
+        if (this.vy < minFall) this.vy = minFall;
         if (nx < 0 || nx > canvas.width) this.vx *= -0.5;
         const idx = Math.floor(ny) * canvas.width + Math.floor(nx);
         if (maskData[idx] === 1) {
             this.vx += this.x < canvas.width / 2 ? -0.5 : 0.5;
-            this.vy *= 0.9;
+            this.vy *= 0.97; // was 0.9 — much less slowdown on the 8
         } else {
-            this.vx *= 0.97;
+            this.vx *= 0.98;
         }
         if (pointer.active) {
             const dx = this.x - pointer.x, dy = this.y - pointer.y;
@@ -656,5 +661,6 @@ window.addEventListener('resize', resize);
 resize();
 animate();
 </script>
+
 </body>
 </html>
