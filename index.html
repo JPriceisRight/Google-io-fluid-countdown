@@ -5,93 +5,109 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>SELF QUEST</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html {
-            width: 100%; height: 100%;
-            background: #000;
-            overflow: hidden;
-            font-family: 'Courier New', monospace;
-            touch-action: none;
-        }
-        canvas { display: block; width: 100%; height: 100%; }
-        #brand {
-            position: absolute; top: 40px; width: 100%;
-            text-align: center;
-            color: rgba(0, 160, 220, 0.6);
-            font-size: 22px; letter-spacing: 12px;
-            font-weight: bold;
-            text-shadow: 0 0 6px rgba(0, 180, 255, 0.15);
-            pointer-events: none; z-index: 10;
-            text-transform: uppercase;
-        }
-        #timer {
-            position: absolute; top: 80px; width: 100%;
-            text-align: center; color: rgba(0,200,255,0.3);
-            font-size: 14px; letter-spacing: 6px;
-            pointer-events: none; z-index: 10;
-        }
-        #affirmation {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center; color: rgba(0,200,255,0);
-            font-size: 13px; letter-spacing: 3px;
-            pointer-events: none; z-index: 10;
-            width: 85%; line-height: 1.8;
-            transition: color 2s, opacity 2s; text-transform: uppercase;
-        }
-        #controls {
-            position: absolute; bottom: 65px; left: 50%;
-            transform: translateX(-50%);
-            display: flex; flex-direction: column;
-            gap: 15px; z-index: 20;
-            align-items: center; width: 100%;
-        }
-        .btn {
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(0,200,255,0.4);
-            color: rgba(0,200,255,0.8);
-            font-family: 'Courier New', monospace;
-            font-size: 11px; letter-spacing: 4px;
-            padding: 14px 32px; cursor: pointer;
-            transition: all 0.3s; text-transform: uppercase;
-            backdrop-filter: blur(5px);
-        }
-        .btn:hover { border-color: #fff; color: #fff; }
-        .btn.active { border-color: rgba(0,255,200,0.8); color: rgba(0,255,200,1); }
-        #hint {
-            position: absolute; bottom: 20px; width: 100%;
-            text-align: center; color: rgba(0,200,255,0.2);
-            font-size: 9px; letter-spacing: 4px;
-            pointer-events: none; z-index: 10;
-            text-transform: uppercase;
-            transition: opacity 2s;
-        }
-        #complete {
-            position: absolute; inset: 0;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            z-index: 30; pointer-events: none;
-            opacity: 0; transition: opacity 3s;
-            background: rgba(0,0,0,0.9);
-        }
-        #complete.show { opacity: 1; pointer-events: all; }
-        #complete-text {
-            color: rgba(0,210,255,0.8);
-            font-size: 14px; letter-spacing: 6px;
-            text-transform: uppercase;
-            text-align: center; line-height: 2.5;
-        }
-        #replay-btn {
-            margin-top: 40px; background: transparent;
-            border: 1px solid rgba(0,200,255,0.4);
-            color: rgba(0,200,255,0.7);
-            font-family: 'Courier New', monospace;
-            font-size: 10px; letter-spacing: 5px;
-            padding: 12px 30px; cursor: pointer;
-            text-transform: uppercase;
-        }
-    </style>
+
+```
+<!-- App name for home screen -->
+<meta name="apple-mobile-web-app-title" content="Self Quest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#000000">
+
+<!-- Inline SVG favicon — glowing 8 in cyan -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23060d1f'/%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='50%25' r='60%25'%3E%3Cstop offset='0%25' stop-color='%230a1a3a'/%3E%3Cstop offset='100%25' stop-color='%23000408'/%3E%3C/radialGradient%3E%3Cfilter id='f'%3E%3CfeGaussianBlur stdDeviation='8'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='512' height='512' rx='80' fill='url(%23g)'/%3E%3Ccircle cx='256' cy='256' r='230' fill='none' stroke='rgba(0%2C180%2C255%2C0.4)' stroke-width='1.5'/%3E%3Ctext x='256' y='318' font-size='320' font-weight='900' font-family='Arial Black' text-anchor='middle' fill='none' stroke='%2300ccff' stroke-width='3' filter='url(%23f)'%3E8%3C/text%3E%3Ctext x='256' y='318' font-size='320' font-weight='900' font-family='Arial Black' text-anchor='middle' fill='none' stroke='%2300eeff' stroke-width='2.5'%3E8%3C/text%3E%3Ccircle cx='256' cy='256' r='6' fill='%2300ff44'/%3E%3C/svg%3E">
+
+<!-- Apple touch icon — same SVG as PNG-equivalent for home screen -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23060d1f'/%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='50%25' r='60%25'%3E%3Cstop offset='0%25' stop-color='%230a1a3a'/%3E%3Cstop offset='100%25' stop-color='%23000408'/%3E%3C/radialGradient%3E%3Cfilter id='f'%3E%3CfeGaussianBlur stdDeviation='8'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='512' height='512' rx='80' fill='url(%23g)'/%3E%3Ccircle cx='256' cy='256' r='220' fill='none' stroke='rgba(0%2C180%2C255%2C0.5)' stroke-width='2'/%3E%3Ccircle cx='256' cy='26' r='4' fill='%2300ffff'/%3E%3Ccircle cx='486' cy='256' r='4' fill='%2300ffff'/%3E%3Ccircle cx='256' cy='486' r='4' fill='%2300ffff'/%3E%3Ccircle cx='26' cy='256' r='4' fill='%2300ffff'/%3E%3Ctext x='256' y='318' font-size='320' font-weight='900' font-family='Arial Black' text-anchor='middle' fill='none' stroke='%2300ccff' stroke-width='3' filter='url(%23f)'%3E8%3C/text%3E%3Ctext x='256' y='318' font-size='320' font-weight='900' font-family='Arial Black' text-anchor='middle' fill='none' stroke='%2300eeff' stroke-width='2.5'%3E8%3C/text%3E%3Ccircle cx='256' cy='256' r='8' fill='%2300ff44'/%3E%3Ccircle cx='256' cy='256' r='3' fill='%23ffffff'/%3E%3C/svg%3E">
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html {
+        width: 100%; height: 100%;
+        background: #000;
+        overflow: hidden;
+        font-family: 'Courier New', monospace;
+        touch-action: none;
+    }
+    canvas { display: block; width: 100%; height: 100%; }
+    #brand {
+        position: absolute; top: 40px; width: 100%;
+        text-align: center;
+        color: rgba(0, 160, 220, 0.6);
+        font-size: 22px; letter-spacing: 12px;
+        font-weight: bold;
+        text-shadow: 0 0 6px rgba(0, 180, 255, 0.15);
+        pointer-events: none; z-index: 10;
+        text-transform: uppercase;
+    }
+    #timer {
+        position: absolute; top: 80px; width: 100%;
+        text-align: center; color: rgba(0,200,255,0.3);
+        font-size: 14px; letter-spacing: 6px;
+        pointer-events: none; z-index: 10;
+    }
+    #affirmation {
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center; color: rgba(0,200,255,0);
+        font-size: 13px; letter-spacing: 3px;
+        pointer-events: none; z-index: 10;
+        width: 85%; line-height: 1.8;
+        transition: color 2s, opacity 2s; text-transform: uppercase;
+    }
+    #controls {
+        position: absolute; bottom: 65px; left: 50%;
+        transform: translateX(-50%);
+        display: flex; flex-direction: column;
+        gap: 15px; z-index: 20;
+        align-items: center; width: 100%;
+    }
+    .btn {
+        background: rgba(0,0,0,0.5);
+        border: 1px solid rgba(0,200,255,0.4);
+        color: rgba(0,200,255,0.8);
+        font-family: 'Courier New', monospace;
+        font-size: 11px; letter-spacing: 4px;
+        padding: 14px 32px; cursor: pointer;
+        transition: all 0.3s; text-transform: uppercase;
+        backdrop-filter: blur(5px);
+    }
+    .btn:hover { border-color: #fff; color: #fff; }
+    .btn.active { border-color: rgba(0,255,200,0.8); color: rgba(0,255,200,1); }
+    #hint {
+        position: absolute; bottom: 20px; width: 100%;
+        text-align: center; color: rgba(0,200,255,0.2);
+        font-size: 9px; letter-spacing: 4px;
+        pointer-events: none; z-index: 10;
+        text-transform: uppercase;
+        transition: opacity 2s;
+    }
+    #complete {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        z-index: 30; pointer-events: none;
+        opacity: 0; transition: opacity 3s;
+        background: rgba(0,0,0,0.9);
+    }
+    #complete.show { opacity: 1; pointer-events: all; }
+    #complete-text {
+        color: rgba(0,210,255,0.8);
+        font-size: 14px; letter-spacing: 6px;
+        text-transform: uppercase;
+        text-align: center; line-height: 2.5;
+    }
+    #replay-btn {
+        margin-top: 40px; background: transparent;
+        border: 1px solid rgba(0,200,255,0.4);
+        color: rgba(0,200,255,0.7);
+        font-family: 'Courier New', monospace;
+        font-size: 10px; letter-spacing: 5px;
+        padding: 12px 30px; cursor: pointer;
+        text-transform: uppercase;
+    }
+</style>
+```
+
 </head>
 <body>
 
