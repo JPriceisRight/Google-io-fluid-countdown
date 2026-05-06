@@ -636,8 +636,8 @@ function animate() {
     ctx.fillStyle = calmMode ? 'rgba(0,0,0,0.14)' : 'rgba(0,0,0,0.16)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Idle 8 glow
-    if (audioMode === 'idle' && !sessionComplete) {
+    // Idle 8 glow — only before quest, disappears the moment Begin Quest is tapped
+    if (audioMode === 'idle' && !exploding && !sessionComplete) {
         drawIdleEight();
     }
 
@@ -646,8 +646,8 @@ function animate() {
     particles.forEach(p => { p.update(boost); p.draw(audioIntensity, pulse); });
     ctx.globalCompositeOperation = 'source-over';
 
-    // PUNCH BLACK HOLES through the particle layer every frame
-    if (!exploding && holeCanvas) {
+    // PUNCH BLACK HOLES — only in idle mode, 8 fully disappears once quest begins
+    if (audioMode === 'idle' && !exploding && holeCanvas) {
         punchHoles();
     }
 
