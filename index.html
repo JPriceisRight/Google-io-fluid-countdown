@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,135 +15,72 @@
             touch-action: none;
         }
         canvas { display: block; width: 100%; height: 100%; }
+        
+        /* 1. INCREASED VISIBILITY FOR BRAND */
         #brand {
-            position: absolute; top: 24px; width: 100%;
-            text-align: center; color: rgba(0,180,255,0.4);
-            font-size: 11px; letter-spacing: 10px;
+            position: absolute; top: 40px; width: 100%;
+            text-align: center; 
+            color: rgba(0, 210, 255, 0.9); 
+            font-size: 24px; 
+            letter-spacing: 14px;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(0, 200, 255, 0.6); 
             pointer-events: none; z-index: 10;
-        }
-        #timer {
-            position: absolute; top: 52px; width: 100%;
-            text-align: center; color: rgba(0,200,255,0.25);
-            font-size: 10px; letter-spacing: 6px;
-            pointer-events: none; z-index: 10;
-        }
-        #affirmation {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center; color: rgba(0,200,255,0);
-            font-size: 13px; letter-spacing: 3px;
-            pointer-events: none; z-index: 10;
-            width: 80%; line-height: 2;
-            transition: color 3s; text-transform: uppercase;
-        }
-        #controls {
-            position: absolute; bottom: 36px; left: 50%;
-            transform: translateX(-50%);
-            display: flex; gap: 10px; z-index: 20;
-            align-items: center; flex-wrap: wrap;
-            justify-content: center; max-width: 90vw;
-        }
-        .btn {
-            background: transparent;
-            border: 1px solid rgba(0,200,255,0.4);
-            color: rgba(0,200,255,0.7);
-            font-family: 'Courier New', monospace;
-            font-size: 10px; letter-spacing: 3px;
-            padding: 10px 18px; cursor: pointer;
-            transition: all 0.3s; white-space: nowrap;
             text-transform: uppercase;
         }
-        .btn:hover { background: rgba(0,200,255,0.08); border-color: rgba(0,200,255,0.8); color: #fff; }
-        .btn.active { border-color: rgba(0,255,200,0.8); color: rgba(0,255,200,0.9); box-shadow: 0 0 14px rgba(0,255,200,0.25); }
-        .btn.warn { border-color: rgba(255,80,80,0.6); color: rgba(255,80,80,0.7); }
-        .btn.calm-on { border-color: rgba(180,100,255,0.8); color: rgba(180,100,255,0.9); box-shadow: 0 0 14px rgba(180,100,255,0.2); }
-        #hint {
-            position: absolute; bottom: 14px; width: 100%;
-            text-align: center; color: rgba(0,200,255,0.25);
-            font-size: 9px; letter-spacing: 4px;
+
+        #timer {
+            position: absolute; top: 85px; width: 100%;
+            text-align: center; color: rgba(0,200,255,0.4);
+            font-size: 14px; letter-spacing: 6px;
             pointer-events: none; z-index: 10;
-            transition: opacity 2s; text-transform: uppercase;
         }
-        #warning {
-            position: absolute; inset: 0;
-            background: rgba(0,0,0,0.93);
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            z-index: 50; padding: 40px; text-align: center;
+
+        /* CENTERED CONTROLS */
+        #controls {
+            position: absolute; bottom: 65px; left: 50%;
+            transform: translateX(-50%);
+            display: flex; flex-direction: column; 
+            gap: 15px; z-index: 20;
+            align-items: center; width: 100%;
         }
-        #warning h2 { color: rgba(0,200,255,0.9); font-size: 11px; letter-spacing: 6px; margin-bottom: 24px; text-transform: uppercase; }
-        #warning p { color: rgba(255,255,255,0.5); font-size: 11px; line-height: 2; letter-spacing: 1px; max-width: 340px; margin-bottom: 32px; }
-        #warning .highlight { color: rgba(180,100,255,0.9); }
-        #warning-btn {
-            background: transparent; border: 1px solid rgba(0,200,255,0.5);
-            color: rgba(0,200,255,0.8); font-family: 'Courier New', monospace;
-            font-size: 10px; letter-spacing: 4px; padding: 12px 28px;
-            cursor: pointer; text-transform: uppercase; margin-top: 8px; transition: all 0.3s;
+
+        .btn {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(0,200,255,0.6);
+            color: rgba(0,200,255,1);
+            font-family: 'Courier New', monospace;
+            font-size: 12px; letter-spacing: 4px;
+            padding: 14px 32px; cursor: pointer;
+            transition: all 0.3s; white-space: nowrap;
+            text-transform: uppercase;
+            backdrop-filter: blur(5px);
         }
-        #warning-btn:hover { background: rgba(0,200,255,0.1); color: #fff; }
-        #calm-warning-btn {
-            background: transparent; border: 1px solid rgba(180,100,255,0.5);
-            color: rgba(180,100,255,0.8); font-family: 'Courier New', monospace;
-            font-size: 10px; letter-spacing: 4px; padding: 12px 28px;
-            cursor: pointer; text-transform: uppercase; margin-top: 12px; transition: all 0.3s;
-        }
-        #calm-warning-btn:hover { background: rgba(180,100,255,0.1); color: #fff; }
-        #complete {
-            position: absolute; inset: 0;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            z-index: 30; pointer-events: none;
-            opacity: 0; transition: opacity 3s;
-        }
+
+        .btn:hover { background: rgba(0,200,255,0.15); border-color: #fff; color: #fff; }
+        .btn.active { border-color: rgba(0,255,200,1); color: rgba(0,255,200,1); box-shadow: 0 0 20px rgba(0,255,200,0.3); }
+
+        #affirmation { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: rgba(0,200,255,0); font-size: 16px; letter-spacing: 4px; pointer-events: none; z-index: 10; width: 80%; line-height: 2; transition: color 3s; text-transform: uppercase; }
+        #hint { position: absolute; bottom: 20px; width: 100%; text-align: center; color: rgba(0,200,255,0.3); font-size: 10px; letter-spacing: 4px; pointer-events: none; z-index: 10; text-transform: uppercase; }
+        #complete { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 30; pointer-events: none; opacity: 0; transition: opacity 3s; background: rgba(0,0,0,0.85); }
         #complete.show { opacity: 1; pointer-events: all; }
-        #complete-text {
-            color: rgba(0,210,255,0.85); font-size: 13px; letter-spacing: 8px;
-            text-transform: uppercase; text-align: center; line-height: 2.8;
-            opacity: 0; transition: opacity 4s;
-        }
-        #complete.show #complete-text { opacity: 1; }
-        #replay-btn {
-            margin-top: 40px; background: transparent;
-            border: 1px solid rgba(0,200,255,0.4); color: rgba(0,200,255,0.7);
-            font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 5px;
-            padding: 12px 30px; cursor: pointer; text-transform: uppercase;
-            opacity: 0; transition: opacity 3s 2s, background 0.3s;
-        }
-        #complete.show #replay-btn { opacity: 1; }
-        #replay-btn:hover { background: rgba(0,200,255,0.1); color: #fff; }
-        #small-doses {
-            position: absolute; bottom: 6px; right: 16px;
-            color: rgba(0,150,255,0.15); font-size: 8px;
-            letter-spacing: 3px; pointer-events: none; z-index: 10; text-transform: uppercase;
-        }
+        #complete-text { color: rgba(0,210,255,0.85); font-size: 14px; letter-spacing: 8px; text-transform: uppercase; text-align: center; line-height: 2.8; }
+        #replay-btn { margin-top: 40px; background: transparent; border: 1px solid rgba(0,200,255,0.4); color: rgba(0,200,255,0.7); font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 5px; padding: 12px 30px; cursor: pointer; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-<div id="warning">
-    <h2>⚠ Before You Begin</h2>
-    <p>
-        Self Quest contains <span class="highlight">gentle moving lights</span> and a brief 3-second opening glow.<br><br>
-        If you or someone nearby has <span class="highlight">photosensitive epilepsy</span> or sensitivity to light,
-        please use <span class="highlight">Calm Mode</span> — a softer, fully still experience with no flash effects.<br><br>
-        This is not a medical treatment. It is a gentle tool for relaxation and focus.
-    </p>
-    <button id="warning-btn" onclick="dismissWarning(false)">I Understand — Enter</button>
-    <button id="calm-warning-btn" onclick="dismissWarning(true)">Enter Calm Mode 🌙</button>
-</div>
-
-<div id="brand">S E L F &nbsp; Q U E S T</div>
+<div id="brand">SELF QUEST</div>
 <div id="timer">— : —</div>
 <div id="affirmation"></div>
 <canvas id="c"></canvas>
 
 <div id="controls">
     <button class="btn" id="play-btn">▶ Begin Quest</button>
-    <button class="btn" id="mic-btn">🎤 Mic</button>
     <button class="btn" id="calm-btn">🌙 Calm Mode</button>
 </div>
+
 <div id="hint">touch · move · breathe</div>
-<div id="small-doses">Small Doses</div>
 
 <div id="complete">
     <div id="complete-text">
@@ -157,26 +95,20 @@
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 const playBtn = document.getElementById('play-btn');
-const micBtn = document.getElementById('mic-btn');
 const calmBtn = document.getElementById('calm-btn');
-const hint = document.getElementById('hint');
 const timerEl = document.getElementById('timer');
 const affirmationEl = document.getElementById('affirmation');
 const completeEl = document.getElementById('complete');
 
 let dpr, maskData = [], particles = [];
 const N = 1800;
-let analyser, dataArray;
+let analyser, dataArray, audioCtx;
 let audioIntensity = 0, idleTime = 0;
 let audioMode = 'idle';
 let currentAudio = null;
 let sessionStartTime = null;
 let sessionComplete = false;
 const SESSION_DURATION = 255;
-
-// Glow only fires for first 3 seconds of session then stops
-const GLOW_DURATION = 3000;
-let sessionStartMs = null;
 
 let calmMode = false;
 
@@ -200,105 +132,67 @@ let affirmIndex = 0, affirmTimer = 0;
 const AFFIRM_INTERVAL = 30;
 let pointer = { x: -9999, y: -9999, active: false };
 
-const COLORS_NORMAL = [
-    [0, 200, 255], [0, 150, 255], [80, 220, 255], [0, 255, 220], [100, 180, 255],
-];
-const COLORS_CALM = [
-    [0, 120, 200], [0, 100, 180], [60, 160, 220], [0, 180, 160], [80, 130, 200],
-];
+const COLORS_NORMAL = [[0, 200, 255], [0, 150, 255], [80, 220, 255], [0, 255, 220], [100, 180, 255]];
+const COLORS_CALM = [[0, 120, 200], [0, 100, 180], [60, 160, 220], [0, 180, 160], [80, 130, 200]];
+
 const rc = () => {
     const p = calmMode ? COLORS_CALM : COLORS_NORMAL;
     return p[Math.floor(Math.random() * p.length)];
 };
 
-function dismissWarning(goCalm) {
-    document.getElementById('warning').style.display = 'none';
-    if (goCalm) enableCalmMode();
-}
 function enableCalmMode() {
     calmMode = true;
     calmBtn.textContent = '☀️ Normal Mode';
-    calmBtn.classList.add('calm-on');
     particles.forEach(p => p.color = rc());
 }
 function disableCalmMode() {
     calmMode = false;
     calmBtn.textContent = '🌙 Calm Mode';
-    calmBtn.classList.remove('calm-on');
     particles.forEach(p => p.color = rc());
 }
 calmBtn.addEventListener('click', () => calmMode ? disableCalmMode() : enableCalmMode());
 
-window.addEventListener('mousemove', e => { pointer.x = e.clientX*dpr; pointer.y = e.clientY*dpr; pointer.active = true; });
-window.addEventListener('mouseout', () => pointer.active = false);
-window.addEventListener('touchmove', e => {
-    e.preventDefault();
-    pointer.x = e.touches[0].clientX*dpr; pointer.y = e.touches[0].clientY*dpr; pointer.active = true;
-}, { passive: false });
-window.addEventListener('touchend', () => pointer.active = false);
-
 playBtn.addEventListener('click', async () => {
     if (audioMode === 'track') {
-        currentAudio && currentAudio.pause();
+        if(currentAudio) currentAudio.pause();
         audioMode = 'idle';
         playBtn.textContent = '▶ Begin Quest';
         playBtn.classList.remove('active');
-        sessionStartTime = null; sessionStartMs = null;
-        timerEl.textContent = '— : —';
         return;
     }
+    
     try {
-        const ac = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = ac.createAnalyser();
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+        analyser = audioCtx.createAnalyser();
         analyser.fftSize = 256;
         dataArray = new Uint8Array(analyser.frequencyBinCount);
+        
         currentAudio = new Audio('808beat-4GSynth.mp3');
         currentAudio.crossOrigin = 'anonymous';
-        const source = ac.createMediaElementSource(currentAudio);
+        
+        const source = audioCtx.createMediaElementSource(currentAudio);
         source.connect(analyser);
-        analyser.connect(ac.destination);
+        analyser.connect(audioCtx.destination);
+        
         await currentAudio.play();
+        
         audioMode = 'track';
         sessionStartTime = performance.now();
-        sessionStartMs = performance.now();
         sessionComplete = false;
-        affirmIndex = 0; affirmTimer = 0;
         playBtn.textContent = '■ End Quest';
         playBtn.classList.add('active');
-        micBtn.classList.remove('active');
-        hint.style.opacity = '0';
         showAffirmation();
     } catch(e) {
-        playBtn.textContent = 'MP3 Not Found';
-        playBtn.classList.add('warn');
-        hint.textContent = 'place 808beat-4GSynth.mp3 in same folder';
-        hint.style.opacity = '1';
-        hint.style.color = 'rgba(255,100,100,0.5)';
+        console.error("Audio failed:", e);
+        playBtn.textContent = 'Audio Error';
     }
-});
-
-micBtn.addEventListener('click', async () => {
-    if (audioMode === 'mic') {
-        audioMode = 'idle'; micBtn.textContent = '🎤 Mic'; micBtn.classList.remove('active'); return;
-    }
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const ac = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = ac.createAnalyser(); analyser.fftSize = 256;
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-        ac.createMediaStreamSource(stream).connect(analyser);
-        audioMode = 'mic';
-        micBtn.textContent = '● Live'; micBtn.classList.add('active');
-        playBtn.classList.remove('active');
-        if (currentAudio) currentAudio.pause();
-        hint.style.opacity = '0';
-        if (!sessionStartTime) { sessionStartTime = performance.now(); sessionStartMs = performance.now(); sessionComplete = false; }
-    } catch(e) { micBtn.textContent = 'Denied'; micBtn.classList.add('warn'); }
 });
 
 function showAffirmation() {
     const text = AFFIRMATIONS[affirmIndex % AFFIRMATIONS.length];
-    affirmationEl.style.color = calmMode ? 'rgba(150,180,255,0.4)' : 'rgba(0,200,255,0.45)';
+    affirmationEl.style.color = 'rgba(0,210,255,0.7)';
     affirmationEl.textContent = text;
     setTimeout(() => { affirmationEl.style.color = 'rgba(0,200,255,0)'; }, 6000);
     affirmIndex++;
@@ -306,33 +200,17 @@ function showAffirmation() {
 
 function replayQuest() {
     completeEl.classList.remove('show');
-    sessionStartTime = null; sessionStartMs = null;
+    sessionStartTime = null;
     sessionComplete = false;
     timerEl.textContent = '— : —';
     playBtn.textContent = '▶ Begin Quest';
     playBtn.classList.remove('active');
-    audioMode = 'idle'; hint.style.opacity = '1';
-    affirmationEl.style.color = 'rgba(0,200,255,0)';
+    audioMode = 'idle';
 }
 
 function triggerSessionComplete() {
     sessionComplete = true;
     completeEl.classList.add('show');
-    particles.forEach(p => {
-        p.vx = (Math.random()-0.5) * (calmMode ? 8 : 20);
-        p.vy = (Math.random()-0.5) * (calmMode ? 8 : 20);
-        p.color = calmMode ? [80,150,220] : [0,220,255];
-    });
-    if (currentAudio) {
-        setTimeout(() => {
-            let vol = 1;
-            const fade = setInterval(() => {
-                vol -= 0.05;
-                if (currentAudio) currentAudio.volume = Math.max(0, vol);
-                if (vol <= 0) clearInterval(fade);
-            }, 200);
-        }, 2000);
-    }
 }
 
 function resize() {
@@ -358,9 +236,8 @@ class P {
     constructor(scattered) { this.color = rc(); this.reset(); if (scattered) this.y = Math.random()*canvas.height; }
     reset() {
         this.x = Math.random()*canvas.width; this.y = -Math.random()*60;
-        const speed = calmMode ? 0.6 : 1.2, fall = calmMode ? 1.2 : 2.5;
-        this.vx = (Math.random()-0.5)*speed;
-        this.vy = Math.random()*fall + (calmMode ? 0.8 : 1.5);
+        this.vx = (Math.random()-0.5)*(calmMode ? 0.6 : 1.2);
+        this.vy = Math.random()*(calmMode ? 1.2 : 2.5) + (calmMode ? 0.8 : 1.5);
         this.life = Math.random(); this.color = rc();
     }
     update(boost) {
@@ -368,15 +245,6 @@ class P {
         if (ny > canvas.height || nx < 0 || nx > canvas.width) { this.reset(); return; }
         const idx = Math.floor(ny)*canvas.width + Math.floor(nx);
         if (maskData[idx] === 1) { this.vx += this.x < canvas.width/2 ? -0.6 : 0.6; this.vy *= 0.92; }
-        else { this.vx *= 0.97; }
-        if (pointer.active) {
-            const dx = this.x-pointer.x, dy = this.y-pointer.y;
-            const dist = Math.sqrt(dx*dx+dy*dy), r = 160*dpr;
-            if (dist < r && dist > 0) {
-                const f = (r-dist)/r, power = calmMode ? 1.2 : 2.5;
-                this.vx += (dx/dist)*f*power; this.vy += (dy/dist)*f*power;
-            }
-        }
         this.x += this.vx; this.y += this.vy+boost;
     }
     draw(intensity, pulse) {
@@ -390,55 +258,26 @@ class P {
 
 function animate() {
     requestAnimationFrame(animate);
-
     if (sessionStartTime && !sessionComplete) {
         const elapsed = (performance.now()-sessionStartTime)/1000;
         const remaining = Math.max(0, SESSION_DURATION-elapsed);
         const m = Math.floor(remaining/60), s = Math.floor(remaining%60);
         timerEl.textContent = `${m}:${s.toString().padStart(2,'0')}`;
-        timerEl.style.color = remaining < 30 ? 'rgba(0,255,200,0.5)' : 'rgba(0,200,255,0.25)';
-        affirmTimer += 1/60;
-        if (affirmTimer >= AFFIRM_INTERVAL) { affirmTimer = 0; showAffirmation(); }
         if (elapsed >= SESSION_DURATION) triggerSessionComplete();
     }
-
     if (audioMode !== 'idle' && analyser) {
         analyser.getByteFrequencyData(dataArray);
         let sum = 0; for (let i = 0; i < 12; i++) sum += dataArray[i];
         audioIntensity = sum/12;
     } else { audioIntensity *= 0.9; }
-
-    idleTime += calmMode ? 0.008 : 0.018;
+    idleTime += 0.018;
     const pulse = audioMode === 'idle' ? (Math.sin(idleTime)*0.5+0.5) : 0;
-    const boost = audioIntensity*(calmMode?0.02:0.04) + pulse*(calmMode?0.2:0.4);
-
-    ctx.fillStyle = calmMode ? 'rgba(0,0,0,0.12)' : 'rgba(0,0,0,0.18)';
+    const boost = audioIntensity*0.04 + pulse*0.4;
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     ctx.globalCompositeOperation = 'lighter';
     particles.forEach(p => { p.update(boost); p.draw(audioIntensity, pulse); });
     ctx.globalCompositeOperation = 'source-over';
-
-    // GLOW — only in normal mode AND only within first 3 seconds of session
-    const glowWindowOpen = sessionStartMs && (performance.now() - sessionStartMs) < GLOW_DURATION;
-    if (!calmMode && glowWindowOpen) {
-        if (audioIntensity > 60 || pulse > 0.85) {
-            const ga = audioMode !== 'idle'
-                ? Math.min(0.65, (audioIntensity-60)/180)
-                : (pulse-0.85)/0.15*0.3;
-            const sz = Math.min(canvas.width, canvas.height)*0.72;
-            ctx.save();
-            ctx.globalAlpha = ga;
-            ctx.strokeStyle = 'rgba(0,210,255,1)';
-            ctx.lineWidth = 2*dpr;
-            ctx.shadowColor = 'rgba(0,200,255,1)';
-            ctx.shadowBlur = 40*dpr;
-            ctx.font = `900 ${sz}px sans-serif`;
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.strokeText('8', canvas.width/2, canvas.height/2);
-            ctx.restore();
-        }
-    }
 }
 
 window.addEventListener('resize', resize);
@@ -447,3 +286,4 @@ animate();
 </script>
 </body>
 </html>
+
