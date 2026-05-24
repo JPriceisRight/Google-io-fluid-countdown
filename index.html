@@ -24,14 +24,16 @@
     <meta name="theme-color" content="#000000">
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html {
-            width: 100%; height: 100%;
-            background: #000;
-            overflow: hidden;
-            font-family: 'Courier New', monospace;
-            touch-action: none;
+            #center-logo {
+            position: absolute; top: 45%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px; 
+            pointer-events: none; z-index: 5;
+            transition: opacity 2s ease-in-out;
         }
+        #center-logo.hidden { opacity: 0; }
+        }
+        <img id="center-logo" src="apple-touch-icon.png" alt="Self Quest Logo">
         canvas { display: block; width: 100%; height: 100%; }
         
                 #brand {
@@ -199,101 +201,20 @@ let affirmIndex = 0, affirmTimer = 0;
 const AFFIRM_INTERVAL = 15;
 
 const COLORS_NORMAL = [
-    [0, 180, 220],   
-    [129, 216, 208], 
-    [57, 255, 20],   
-    [0, 255, 210],   
-    [0, 200, 255],   
-    [57, 255, 20]    
+    [129, 216, 208], // Pure Tiffany Blue
+    [0, 255, 230],   // Electric Cyan
+    [0, 200, 255]    // Deep Aqua
 ];
 const COLORS_CALM = [
-    [0, 140, 180],   
     [109, 196, 188], 
     [0, 180, 160],   
-    [40, 180, 20]    
+    [40, 180, 180]    
 ];
 
 const rc = () => {
     const p = calmMode ? COLORS_CALM : COLORS_NORMAL;
     return p[Math.floor(Math.random() * p.length)];
 };
-
-window.addEventListener('mousemove', e => {
-    pointer.x = e.clientX * dpr; pointer.y = e.clientY * dpr; pointer.active = true;
-});
-window.addEventListener('mouseout', () => pointer.active = false);
-window.addEventListener('touchmove', e => {
-    e.preventDefault();
-    pointer.x = e.touches[0].clientX * dpr;
-    pointer.y = e.touches[0].clientY * dpr;
-    pointer.active = true;
-}, { passive: false });
-window.addEventListener('touchend', () => pointer.active = false);
-
-function enableCalmMode() {
-    calmMode = true; calmBtn.textContent = '☀️ Normal Mode';
-    calmBtn.classList.add('active'); particles.forEach(p => p.color = rc());
-}
-function disableCalmMode() {
-    calmMode = false; calmBtn.textContent = '🌙 Calm Mode';
-    calmBtn.classList.remove('active'); particles.forEach(p => p.color = rc());
-}
-calmBtn.addEventListener('click', () => calmMode ? disableCalmMode() : enableCalmMode());
-
-playBtn.addEventListener('click', async () => {
-    if (audioMode === 'track') {
-        if (currentAudio) currentAudio.pause();
-        audioMode = 'idle';
-        playBtn.textContent = '▶ Begin Quest';
-        playBtn.classList.remove('active');
-        sessionStartTime = null;
-        timerEl.textContent = '01:45';
-        hintEl.style.opacity = '1';
-        showingGoText = false;
-        return;
-    }
-    try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') await audioCtx.resume();
-        analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 256;
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-        
-        currentAudio = new Audio('808beat-4GSynthG.mp3');
-        currentAudio.crossOrigin = 'anonymous';
-        currentAudio.loop = false;
-        
-        const source = audioCtx.createMediaElementSource(currentAudio);
-        source.connect(analyser);
-        analyser.connect(audioCtx.destination);
-        await currentAudio.play();
-        audioMode = 'track';
-        sessionStartTime = performance.now();
-        sessionComplete = false;
-        
-        showingGoText = true;
-        goTextStartTime = performance.now();
-        
-        affirmIndex = 0; affirmTimer = 0;
-        playBtn.textContent = '■ End Quest';
-        playBtn.classList.add('active');
-        hintEl.style.opacity = '0';
-        
-        setTimeout(() => showAffirmation(), 3000);
-    } catch(e) {
-        playBtn.textContent = 'Audio Error';
-        console.error(e);
-    }
-});
-
-function resize() {
-    dpr = window.devicePixelRatio || 1;
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
-
-    particles = [];
-    for (let i = 0; i < N; i++) particles.push(new P(true));
-}
 
 class P {
     constructor(scattered) {
@@ -305,47 +226,47 @@ class P {
         this.x = Math.random() * canvas.width;
         this.y = -Math.random() * canvas.height * 0.5;
         this.vx = (Math.random() - 0.5) * 0.5;
-        
-        // SLOWER BASE GRAVITY: Makes them drift peacefully
         this.vy = Math.random() * (calmMode ? 0.2 : 0.4) + (calmMode ? 0.2 : 0.3); 
         this.life = Math.random();
         this.color = rc();
     }
     
     update(boost) {
-        // Smoothly pull particles back to a SLOW falling speed after they get blasted
         const targetVy = calmMode ? 0.3 : 0.5; 
         this.vy += (targetVy - this.vy) * 0.05; 
         
-        this.vx *= 0.94; // Friction to slow down horizontal movement
+        // Stronger friction to stop them from bunching up
+        this.vx *= 0.88; 
         
         if (pointer.active) {
             const dx = this.x - pointer.x, dy = this.y - pointer.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
-            const r = 180 * dpr; // Slightly larger touch area for easier bursting
+            const r = 160 * dpr; 
             
             if (dist < r && dist > 0) {
                 const f = (r - dist) / r;
-                // MASSIVE BURST MULTIPLIER: Touching them creates an explosion effect
-                this.vx += (dx/dist) * f * (calmMode ? 6 : 18);
-                this.vy += (dy/dist) * f * (calmMode ? 6 : 18);
+                // Lowered burst multiplier for a controlled, gentle splash
+                this.vx += (dx/dist) * f * (calmMode ? 2 : 6);
+                this.vy += (dy/dist) * f * (calmMode ? 2 : 6);
             }
         }
         
         this.x += this.vx;
-        this.y += this.vy + boost;
+        this.y += this.vy + (boost * 0.5); // Halved the audio boost effect
 
-        // Reset the particle if it falls off the bottom OR gets blasted off the sides/top
         if (this.y > canvas.height + 20 || this.y < -150 || this.x < -50 || this.x > canvas.width + 50) {
             this.reset();
-            this.y = -20; // Drop from the top again
+            this.y = -20; 
         }
     }
     
     draw(intensity, pulse) {
         const [r, g, b] = this.color;
-        const a = Math.min(1, 0.4 + this.life*0.45 + intensity*0.005 + pulse*0.3);
-        const sz = (1.0 + intensity*0.008 + pulse*0.8) * dpr;
+        const a = Math.min(1, 0.4 + this.life*0.45 + intensity*0.003 + pulse*0.2);
+        
+        // Shrunk base particle size for a finer, glass-like rain
+        const sz = (0.6 + intensity*0.003 + pulse*0.4) * dpr; 
+        
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
         ctx.beginPath();
         ctx.arc(this.x, this.y, sz, 0, Math.PI*2);
@@ -375,6 +296,7 @@ function showAffirmation() {
 }
 
 function replayQuest() {
+    document.getElementById('center-logo').classList.remove('hidden');
     completeEl.classList.remove('show');
     sessionStartTime = null; sessionComplete = false;
     timerEl.textContent = '01:45';
