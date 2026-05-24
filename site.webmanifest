@@ -1,4 +1,5 @@
 {
+  "id": "/?source=pwa",
   "name": "Self Quest",
   "short_name": "SelfQuest",
   "start_url": "/",
@@ -7,6 +8,7 @@
   "theme_color": "#000000",
   "description": "A gentle tool for relaxation and focus.",
   "orientation": "portrait",
+  "categories": ["health", "lifestyle", "entertainment"],
   "icons": [
     {
       "src": "favicon-96x96.png",
@@ -18,6 +20,20 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot1.png",
+      "sizes": "1170x2532",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "screenshot2.png",
+      "sizes": "1170x2532",
+      "type": "image/png",
+      "form_factor": "narrow"
     }
   ]
 }
