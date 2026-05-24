@@ -10,18 +10,13 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://selfquest.app">
     <meta property="og:image" content="https://selfquest.app/apple-touch-icon.png">
-    <meta property="og:image:type" content="image/png">
-    <meta property="og:image:width" content="512">
-    <meta property="og:image:height" content="512">
-
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23000000'/%3E%3Cdefs%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='10' result='coloredBlur'/%3E%3CfeMerge%3E%3CfeMergeNode in='coloredBlur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Ctext x='256' y='210' font-size='90' font-weight='bold' font-family='Courier New, monospace' text-anchor='middle' fill='%2300d2ff' filter='url(%23glow)' letter-spacing='4'%3ESELF%3C/text%3E%3Ctext x='256' y='320' font-size='90' font-weight='bold' font-family='Courier New, monospace' text-anchor='middle' fill='%2300d2ff' filter='url(%23glow)' letter-spacing='4'%3EQUEST%3C/text%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23000000'/%3E%3Cdefs%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='10' result='coloredBlur'/%3E%3CfeMerge%3E%3CfeMergeNode in='coloredBlur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Ctext x='256' y='210' font-size='90' font-weight='bold' font-family='Courier New, monospace' text-anchor='middle' fill='%2300d2ff' filter='url(%23glow)' letter-spacing='4'%3ESELF%3C/text%3E%3Ctext x='256' y='320' font-size='90' font-weight='bold' font-family='Courier New, monospace' text-anchor='middle' fill='%2300d2ff' filter='url(%23glow)' letter-spacing='4'%3EQUEST%3C/text%3E%3C/svg%3E">
-
     <meta name="apple-mobile-web-app-title" content="Self Quest">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" href="apple-touch-icon.png">
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -32,61 +27,75 @@
             font-family: 'Courier New', monospace;
             touch-action: none;
         }
-        canvas { display: block; width: 100%; height: 100%; }
 
-        #center-logo {
-            position: absolute; top: 45%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 280px; 
-            pointer-events: none; z-index: 5;
-            transition: opacity 2s ease-in-out;
+        /* Canvas sits behind everything */
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
         }
-        #center-logo.hidden { opacity: 0; }
-        
+
+        /* SELF QUEST — big neon title ON TOP of particles */
         #brand {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -58%);
-        text-align: center;
-        font-family: 'Arial Rounded MT Bold', 'Nunito', 'Arial Black', sans-serif;
-        font-size: clamp(52px, 15vw, 88px);
-        font-weight: 900;
-        letter-spacing: 6px;
-        line-height: 1.1;
-        text-transform: uppercase;
-        pointer-events: none;
-        z-index: 10;
-        transition: opacity 1.5s ease;
-        color: rgba(129, 216, 208, 1);
-        text-shadow:
-        0 0 4px rgba(200, 255, 255, 0.9),
-        0 0 10px rgba(129, 216, 208, 0.7),
-        0 0 22px rgba(0, 220, 210, 0.35);
-        -webkit-text-stroke: 0.5px rgba(180, 255, 250, 0.3);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -58%);
+            text-align: center;
+            font-family: 'Arial Rounded MT Bold', 'Nunito', 'Arial Black', sans-serif;
+            font-size: clamp(52px, 15vw, 88px);
+            font-weight: 900;
+            letter-spacing: 6px;
+            line-height: 1.1;
+            text-transform: uppercase;
+            pointer-events: none;
+            z-index: 10;
+            transition: opacity 1.5s ease;
+            /* Tiffany neon glow effect */
+            color: rgba(129, 216, 208, 1);
+            text-shadow:
+                0 0 10px rgba(129, 216, 208, 1),
+                0 0 20px rgba(129, 216, 208, 0.9),
+                0 0 40px rgba(129, 216, 208, 0.7),
+                0 0 80px rgba(0, 220, 210, 0.5),
+                0 0 120px rgba(0, 200, 200, 0.3);
+            -webkit-text-stroke: 1px rgba(200, 255, 255, 0.4);
         }
-        
+        #brand.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Timer — subtle, top center */
         #timer {
-            position: absolute; top: 95px; width: 100%;
-            text-align: center; 
-            color: rgba(129, 216, 208, 0.8);
-            font-size: 18px; 
+            position: absolute; top: 36px; width: 100%;
+            text-align: center;
+            color: rgba(129, 216, 208, 0.4);
+            font-size: 13px;
             letter-spacing: 8px;
-            text-shadow: 0 0 8px rgba(129, 216, 208, 0.4);
-            pointer-events: none; z-index: 10;
+            pointer-events: none;
+            z-index: 15;
         }
-        
+
+        /* Affirmations — bright Tiffany, center screen, above particles */
         #affirmation {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            text-align: center; color: rgba(0,200,255,0);
-            font-size: 14px; letter-spacing: 4px;
-            pointer-events: none; z-index: 10;
-            width: 85%; line-height: 2;
+            text-align: center;
+            color: rgba(129, 216, 208, 0);
+            font-size: 15px; letter-spacing: 4px;
+            pointer-events: none; z-index: 20;
+            width: 85%; line-height: 2.2;
             transition: color 2s, opacity 2s;
             text-transform: uppercase;
+            text-shadow:
+                0 0 16px rgba(129, 216, 208, 1),
+                0 0 32px rgba(129, 216, 208, 0.6);
         }
-        
+
+        /* Controls */
         #controls {
             position: absolute; bottom: 65px; left: 50%;
             transform: translateX(-50%);
@@ -95,66 +104,93 @@
             align-items: center; width: 100%;
         }
         .btn {
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(0,200,255,0.4);
-            color: rgba(0,200,255,0.8);
+            background: rgba(0, 0, 0, 0.45);
+            border: 1.5px solid rgba(255, 255, 255, 0.75);
+            color: rgba(129, 216, 208, 1);
             font-family: 'Courier New', monospace;
-            font-size: 11px; letter-spacing: 4px;
-            padding: 14px 32px; cursor: pointer;
+            font-size: 12px; letter-spacing: 5px;
+            padding: 16px 44px; cursor: pointer;
             transition: all 0.3s; text-transform: uppercase;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
+            text-shadow: 0 0 10px rgba(129, 216, 208, 0.8);
+            box-shadow: 0 0 14px rgba(129, 216, 208, 0.15);
+            min-width: 260px;
         }
-        .btn:hover { border-color: #fff; color: #fff; }
-        .btn.active { border-color: rgba(0,255,200,0.8); color: rgba(0,255,200,1); }
-        
+        .btn:hover {
+            border-color: #fff;
+            color: #fff;
+            box-shadow: 0 0 24px rgba(129, 216, 208, 0.5);
+        }
+        .btn.active {
+            border-color: rgba(129, 216, 208, 1);
+            color: rgba(129, 216, 208, 1);
+            box-shadow: 0 0 22px rgba(129, 216, 208, 0.45);
+        }
+
         #hint {
             position: absolute; bottom: 20px; width: 100%;
-            text-align: center; color: rgba(0,200,255,0.2);
+            text-align: center; color: rgba(129, 216, 208, 0.22);
             font-size: 9px; letter-spacing: 4px;
-            pointer-events: none; z-index: 10;
+            pointer-events: none; z-index: 15;
             text-transform: uppercase;
             transition: opacity 2s;
         }
+
+        /* Session complete */
         #complete {
             position: absolute; inset: 0;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             z-index: 30; pointer-events: none;
             opacity: 0; transition: opacity 3s;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.92);
         }
         #complete.show { opacity: 1; pointer-events: all; }
         #complete-text {
-            color: rgba(0,210,255,0.8);
-            font-size: 13px; letter-spacing: 5px;
+            color: rgba(129, 216, 208, 0.95);
+            font-size: 14px; letter-spacing: 6px;
             text-transform: uppercase;
             text-align: center;
             line-height: 3.2;
+            text-shadow: 0 0 24px rgba(129, 216, 208, 0.6);
         }
         #replay-btn {
             margin-top: 40px; background: transparent;
-            border: 1px solid rgba(0,200,255,0.4);
-            color: rgba(0,200,255,0.7);
+            border: 1.5px solid rgba(255,255,255,0.65);
+            color: rgba(129, 216, 208, 1);
             font-family: 'Courier New', monospace;
-            font-size: 10px; letter-spacing: 5px;
-            padding: 12px 30px; cursor: pointer;
+            font-size: 11px; letter-spacing: 5px;
+            padding: 14px 32px; cursor: pointer;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(129, 216, 208, 0.5);
+        }
+        #replay-btn:hover { border-color: #fff; color: #fff; }
+
+        #small-doses {
+            position: absolute; bottom: 6px; right: 16px;
+            color: rgba(129, 216, 208, 0.1);
+            font-size: 8px; letter-spacing: 3px;
+            pointer-events: none; z-index: 15;
             text-transform: uppercase;
         }
     </style>
 </head>
 <body>
 
-<div id="brand">SELF QUEST</div>
-<div id="timer">03:26</div>
-<div id="affirmation"></div>
-<img id="center-logo" src="apple-touch-icon.png" alt="Self Quest Logo">
 <canvas id="c"></canvas>
+
+<!-- SELF QUEST on top of particles -->
+<div id="brand">SELF<br>QUEST</div>
+
+<div id="timer">04:15</div>
+<div id="affirmation"></div>
 
 <div id="controls">
     <button class="btn" id="play-btn">▶ Begin Quest</button>
     <button class="btn" id="calm-btn">🌙 Calm Mode</button>
 </div>
 <div id="hint">touch · move · breathe</div>
+<div id="small-doses">Small Doses</div>
 
 <div id="complete">
     <div id="complete-text">
@@ -174,6 +210,7 @@ const timerEl = document.getElementById('timer');
 const affirmationEl = document.getElementById('affirmation');
 const completeEl = document.getElementById('complete');
 const hintEl = document.getElementById('hint');
+const brandEl = document.getElementById('brand');
 
 let dpr;
 let particles = [];
@@ -185,12 +222,12 @@ let audioMode = 'idle';
 let currentAudio = null;
 let sessionStartTime = null;
 let sessionComplete = false;
+const SESSION_DURATION = 255;
 
-const SESSION_DURATION = 206; 
-
+// Go text
 let showingGoText = false;
 let goTextStartTime = 0;
-const GO_TEXT_DURATION = 1500;
+const GO_TEXT_DURATION = 2000;
 
 let calmMode = false;
 let pointer = { x: -9999, y: -9999, active: false };
@@ -211,17 +248,22 @@ const AFFIRMATIONS = [
     "you deserve this moment",
 ];
 let affirmIndex = 0, affirmTimer = 0;
-const AFFIRM_INTERVAL = 15;
+const AFFIRM_INTERVAL = 30;
 
 const COLORS_NORMAL = [
-    [129, 216, 208], // Pure Tiffany Blue
-    [0, 255, 230],   // Electric Cyan
-    [0, 200, 255]    // Deep Aqua
+    [129, 216, 208],
+    [0,   255, 230],
+    [0,   200, 255],
+    [0,   255, 80],
+    [0,   255, 80],
+    [100, 255, 180],
+    [129, 216, 208],
 ];
 const COLORS_CALM = [
-    [109, 196, 188], 
-    [0, 180, 160],   
-    [40, 180, 180]    
+    [109, 196, 188],
+    [0,   180, 160],
+    [40,  180, 180],
+    [80,  200, 150],
 ];
 
 const rc = () => {
@@ -258,10 +300,10 @@ playBtn.addEventListener('click', async () => {
         playBtn.textContent = '▶ Begin Quest';
         playBtn.classList.remove('active');
         sessionStartTime = null;
-        timerEl.textContent = '03:26';
+        timerEl.textContent = '04:15';
         hintEl.style.opacity = '1';
+        brandEl.classList.remove('hidden');
         showingGoText = false;
-        document.getElementById('center-logo').classList.remove('hidden');
         return;
     }
     try {
@@ -270,11 +312,9 @@ playBtn.addEventListener('click', async () => {
         analyser = audioCtx.createAnalyser();
         analyser.fftSize = 256;
         dataArray = new Uint8Array(analyser.frequencyBinCount);
-        
         currentAudio = new Audio('808beat-4GSynthG1.mp3');
         currentAudio.crossOrigin = 'anonymous';
         currentAudio.loop = false;
-        
         const source = audioCtx.createMediaElementSource(currentAudio);
         source.connect(analyser);
         analyser.connect(audioCtx.destination);
@@ -282,17 +322,16 @@ playBtn.addEventListener('click', async () => {
         audioMode = 'track';
         sessionStartTime = performance.now();
         sessionComplete = false;
-        
-        showingGoText = true;
-        goTextStartTime = performance.now();
-        document.getElementById('center-logo').classList.add('hidden');
-        
         affirmIndex = 0; affirmTimer = 0;
         playBtn.textContent = '■ End Quest';
         playBtn.classList.add('active');
         hintEl.style.opacity = '0';
-        
-        setTimeout(() => showAffirmation(), 3000);
+
+        // Go! flash then fade brand
+        showingGoText = true;
+        goTextStartTime = performance.now();
+        setTimeout(() => brandEl.classList.add('hidden'), 1800);
+        setTimeout(() => showAffirmation(), 3500);
     } catch(e) {
         playBtn.textContent = 'Audio Error';
         console.error(e);
@@ -312,47 +351,49 @@ class P {
         this.color = rc(); this.reset();
         if (scattered) this.y = Math.random() * canvas.height;
     }
-    
     reset() {
         this.x = Math.random() * canvas.width;
         this.y = -Math.random() * canvas.height * 0.5;
-        this.vx = (Math.random() - 0.5) * 0.5;
-        this.vy = Math.random() * (calmMode ? 0.2 : 0.4) + (calmMode ? 0.2 : 0.3); 
+        this.vx = (Math.random() - 0.5) * (calmMode ? 0.4 : 0.9);
+        this.vy = Math.random() * (calmMode ? 1.0 : 2.0) + (calmMode ? 0.6 : 1.2);
         this.life = Math.random();
         this.color = rc();
     }
-    
     update(boost) {
-        const targetVy = calmMode ? 0.3 : 0.5; 
-        this.vy += (targetVy - this.vy) * 0.05; 
-        this.vx *= 0.88; 
-        
+        let nx = this.x + this.vx;
+        let ny = this.y + this.vy + boost;
+
+        if (ny > canvas.height) {
+            this.x = Math.random() * canvas.width;
+            this.y = -Math.random() * 20;
+            this.vx = (Math.random() - 0.5) * (calmMode ? 0.4 : 0.9);
+            this.vy = Math.random() * (calmMode ? 1.0 : 2.0) + (calmMode ? 0.6 : 1.2);
+            this.color = rc();
+            return;
+        }
+        if (nx < 0 || nx > canvas.width) this.vx *= -0.5;
+
+        const minFall = calmMode ? 0.6 : 1.2;
+        if (this.vy < minFall) this.vy = minFall;
+
         if (pointer.active) {
             const dx = this.x - pointer.x, dy = this.y - pointer.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
-            const r = 160 * dpr; 
-            
+            const r = 160 * dpr;
             if (dist < r && dist > 0) {
                 const f = (r - dist) / r;
-                this.vx += (dx/dist) * f * (calmMode ? 2 : 6);
-                this.vy += (dy/dist) * f * (calmMode ? 2 : 6);
+                this.vx += (dx/dist)*f*(calmMode ? 1.5 : 3.5);
+                this.vy += (dy/dist)*f*(calmMode ? 1.5 : 3.5);
             }
         }
-        
-        this.x += this.vx;
-        this.y += this.vy + (boost * 0.5); 
 
-        if (this.y > canvas.height + 20 || this.y < -150 || this.x < -50 || this.x > canvas.width + 50) {
-            this.reset();
-            this.y = -20; 
-        }
+        this.x += this.vx;
+        this.y += this.vy + boost;
     }
-    
     draw(intensity, pulse) {
         const [r, g, b] = this.color;
-        const a = Math.min(1, 0.4 + this.life*0.45 + intensity*0.003 + pulse*0.2);
-        const sz = (0.6 + intensity*0.003 + pulse*0.4) * dpr; 
-        
+        const a = Math.min(1, 0.45 + this.life*0.45 + intensity*0.004 + pulse*0.25);
+        const sz = (1.2 + intensity*0.009 + pulse*0.9) * dpr;
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
         ctx.beginPath();
         ctx.arc(this.x, this.y, sz, 0, Math.PI*2);
@@ -367,13 +408,15 @@ function showAffirmation() {
         if (audioIntensity > 15 || audioMode === 'idle') {
             affirmationEl.style.transition = 'color 1.5s, opacity 1.5s';
             affirmationEl.style.opacity = '1';
-            affirmationEl.style.color = calmMode ? 'rgba(150,180,255,0.55)' : 'rgba(0,210,255,0.65)';
+            affirmationEl.style.color = calmMode
+                ? 'rgba(150, 220, 210, 0.9)'
+                : 'rgba(129, 216, 208, 1)';
             affirmationEl.textContent = text;
             setTimeout(() => {
                 affirmationEl.style.transition = 'color 2.5s, opacity 2.5s';
-                affirmationEl.style.color = 'rgba(0,200,255,0)';
+                affirmationEl.style.color = 'rgba(129, 216, 208, 0)';
                 affirmationEl.style.opacity = '0';
-            }, 5000);
+            }, 6000);
         } else {
             setTimeout(waitForBeat, 100);
         }
@@ -383,17 +426,17 @@ function showAffirmation() {
 }
 
 function replayQuest() {
-    document.getElementById('center-logo').classList.remove('hidden');
     completeEl.classList.remove('show');
     sessionStartTime = null; sessionComplete = false;
-    timerEl.textContent = '03:26';
+    timerEl.textContent = '04:15';
     playBtn.textContent = '▶ Begin Quest';
     playBtn.classList.remove('active');
     audioMode = 'idle';
     hintEl.style.opacity = '1';
-    affirmationEl.style.color = 'rgba(0,200,255,0)';
+    affirmationEl.style.color = 'rgba(129, 216, 208, 0)';
     affirmationEl.style.opacity = '0';
     showingGoText = false;
+    brandEl.classList.remove('hidden');
     particles.forEach(p => p.reset());
 }
 
@@ -403,7 +446,7 @@ function triggerSessionComplete() {
     particles.forEach(p => {
         p.vx = (Math.random()-0.5)*(calmMode ? 6 : 14);
         p.vy = (Math.random()-0.5)*(calmMode ? 6 : 14);
-        p.color = calmMode ? [80,150,220] : [0,220,255];
+        p.color = calmMode ? [80,150,220] : [129, 216, 208];
     });
     if (currentAudio) {
         setTimeout(() => {
@@ -417,25 +460,29 @@ function triggerSessionComplete() {
     }
 }
 
+// Go! flash on canvas
 function drawGoText() {
     const elapsed = performance.now() - goTextStartTime;
     if (elapsed < GO_TEXT_DURATION) {
         const progress = elapsed / GO_TEXT_DURATION;
-        const sz = Math.min(canvas.width, canvas.height) * 0.25;
-        
+        const sz = Math.min(canvas.width, canvas.height) * 0.18;
         ctx.save();
-        const alpha = Math.max(0, 1 - progress);
-        ctx.globalAlpha = alpha;
-        
-        ctx.strokeStyle = 'rgba(57, 255, 20, 1)';     
-        ctx.shadowColor = 'rgba(57, 255, 20, 0.3)';   
-        
-        ctx.lineWidth = 2.5 * dpr; 
-        ctx.shadowBlur = 4 * dpr; 
-        
+        let alpha;
+        if (progress < 0.2) alpha = progress / 0.2;
+        else if (progress < 0.65) alpha = 1;
+        else alpha = 1 - (progress - 0.65) / 0.35;
+        ctx.globalAlpha = Math.max(0, alpha);
         ctx.font = `900 ${sz}px sans-serif`;
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(57, 255, 20, 1)';
+        ctx.shadowBlur = 40 * dpr;
+        ctx.strokeStyle = 'rgba(57, 255, 20, 1)';
+        ctx.lineWidth = 3 * dpr;
         ctx.strokeText('Go!', canvas.width / 2, canvas.height / 2);
+        ctx.shadowBlur = 12 * dpr;
+        ctx.fillStyle = 'rgba(100, 255, 60, 0.95)';
+        ctx.fillText('Go!', canvas.width / 2, canvas.height / 2);
         ctx.restore();
     } else {
         showingGoText = false;
@@ -448,9 +495,8 @@ function animate() {
     if (audioMode !== 'idle' && analyser) {
         analyser.getByteFrequencyData(dataArray);
         let sum = 0;
-        // Shifted focus from bass (bins 0-15) to mid-high synths (bins 20-60)
-        for (let i = 20; i < 60; i++) sum += dataArray[i];
-        audioIntensity = sum / 40;
+        for (let i = 0; i < 12; i++) sum += dataArray[i];
+        audioIntensity = sum / 12;
     } else {
         audioIntensity *= 0.92;
     }
@@ -477,9 +523,7 @@ function animate() {
     particles.forEach(p => { p.update(boost); p.draw(audioIntensity, pulse); });
     ctx.globalCompositeOperation = 'source-over';
 
-    if (showingGoText) {
-        drawGoText();
-    }
+    if (showingGoText) drawGoText();
 }
 
 window.addEventListener('resize', resize);
