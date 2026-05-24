@@ -161,7 +161,6 @@ let currentAudio = null;
 let sessionStartTime = null;
 let sessionComplete = false;
 
-// Configured tracking variables for 1:45 sequence
 const SESSION_DURATION = 105; 
 
 let showingGoText = false;
@@ -187,9 +186,8 @@ const AFFIRMATIONS = [
     "you deserve this moment",
 ];
 let affirmIndex = 0, affirmTimer = 0;
-const AFFIRM_INTERVAL = 15; // Adjusted down slightly since overall session is shorter
+const AFFIRM_INTERVAL = 15;
 
-// Branded Portfolio Palette (Teal, Tiffany Blue, Electric Cyan, Neon Green)
 const COLORS_NORMAL = [
     [0, 180, 220],   
     [129, 216, 208], 
@@ -251,7 +249,6 @@ playBtn.addEventListener('click', async () => {
         analyser.fftSize = 256;
         dataArray = new Uint8Array(analyser.frequencyBinCount);
         
-        // Target updated song asset parameters
         currentAudio = new Audio('808beat-4GSynthG.mp3');
         currentAudio.crossOrigin = 'anonymous';
         currentAudio.loop = false;
@@ -363,7 +360,6 @@ function showAffirmation() {
         }
     };
     waitForBeat();
-    html: layout text tracking update;
     affirmIndex++;
 }
 
@@ -411,7 +407,6 @@ function drawGoText() {
         const alpha = Math.max(0, 1 - progress);
         ctx.globalAlpha = alpha;
         
-        // Styled Action Cue: Neon Green Glow Output
         ctx.strokeStyle = 'rgba(57, 255, 20, 1)';     
         ctx.shadowColor = 'rgba(57, 255, 20, 0.8)';   
         
