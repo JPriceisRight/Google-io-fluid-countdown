@@ -134,7 +134,7 @@
 <body>
 
 <div id="brand">SELF QUEST</div>
-<div id="timer">01:45</div>
+<div id="timer">03:26</div>
 <div id="affirmation"></div>
 <img id="center-logo" src="apple-touch-icon.png" alt="Self Quest Logo">
 <canvas id="c"></canvas>
@@ -175,7 +175,7 @@ let currentAudio = null;
 let sessionStartTime = null;
 let sessionComplete = false;
 
-const SESSION_DURATION = 105; 
+const SESSION_DURATION = 206; 
 
 let showingGoText = false;
 let goTextStartTime = 0;
@@ -247,7 +247,7 @@ playBtn.addEventListener('click', async () => {
         playBtn.textContent = '▶ Begin Quest';
         playBtn.classList.remove('active');
         sessionStartTime = null;
-        timerEl.textContent = '01:45';
+        timerEl.textContent = '03:26';
         hintEl.style.opacity = '1';
         showingGoText = false;
         document.getElementById('center-logo').classList.remove('hidden');
@@ -260,7 +260,7 @@ playBtn.addEventListener('click', async () => {
         analyser.fftSize = 256;
         dataArray = new Uint8Array(analyser.frequencyBinCount);
         
-        currentAudio = new Audio('808beat-4GSynthG.mp3');
+        currentAudio = new Audio('808beat-4GSynthG1.mp3');
         currentAudio.crossOrigin = 'anonymous';
         currentAudio.loop = false;
         
@@ -353,7 +353,7 @@ function showAffirmation() {
     if (sessionComplete) return;
     const text = AFFIRMATIONS[affirmIndex % AFFIRMATIONS.length];
     const waitForBeat = () => {
-        if (audioIntensity > 40 || audioMode === 'idle') {
+        if (audioIntensity > 15 || audioMode === 'idle') {
             affirmationEl.style.transition = 'color 1.5s, opacity 1.5s';
             affirmationEl.style.opacity = '1';
             affirmationEl.style.color = calmMode ? 'rgba(150,180,255,0.55)' : 'rgba(0,210,255,0.65)';
@@ -375,7 +375,7 @@ function replayQuest() {
     document.getElementById('center-logo').classList.remove('hidden');
     completeEl.classList.remove('show');
     sessionStartTime = null; sessionComplete = false;
-    timerEl.textContent = '01:45';
+    timerEl.textContent = '03:26';
     playBtn.textContent = '▶ Begin Quest';
     playBtn.classList.remove('active');
     audioMode = 'idle';
@@ -437,8 +437,9 @@ function animate() {
     if (audioMode !== 'idle' && analyser) {
         analyser.getByteFrequencyData(dataArray);
         let sum = 0;
-        for (let i = 0; i < 12; i++) sum += dataArray[i];
-        audioIntensity = sum / 12;
+        // Shifted focus from bass (bins 0-15) to mid-high synths (bins 20-60)
+        for (let i = 20; i < 60; i++) sum += dataArray[i];
+        audioIntensity = sum / 40;
     } else {
         audioIntensity *= 0.92;
     }
