@@ -36,7 +36,7 @@
             z-index: 1;
         }
  
-        /* SELF QUEST — SOLID FILLED neon letters, sharp like a real sign */
+        /* SELF QUEST — sharp solid neon */
         #brand {
             position: absolute;
             top: 50%;
@@ -54,19 +54,15 @@
             transition: opacity 1.5s ease;
             white-space: nowrap;
  
-            /* SOLID FILLED Tiffany blue — crisp opaque letters */
-            color: rgb(60, 240, 230);
-            -webkit-text-stroke: 0;
- 
-            /* Tight glow halo — keeps letters sharp and readable */
+            /* Sharp solid Tiffany neon */
+            color: rgb(80, 250, 240);
             text-shadow:
-                0 0 6px rgba(60, 240, 230, 1),
-                0 0 16px rgba(60, 240, 230, 0.7),
-                0 0 30px rgba(0, 200, 200, 0.35);
+                0 0 4px rgba(150, 255, 250, 1),
+                0 0 12px rgba(80, 240, 230, 0.85),
+                0 0 24px rgba(0, 200, 200, 0.4);
         }
         #brand.hidden { opacity: 0; }
  
-        /* Timer */
         #timer {
             position: absolute; top: 36px; width: 100%;
             text-align: center;
@@ -77,7 +73,6 @@
             z-index: 15;
         }
  
-        /* Affirmations */
         #affirmation {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
@@ -93,7 +88,6 @@
                 0 0 26px rgba(129, 216, 208, 0.6);
         }
  
-        /* Buttons */
         #controls {
             position: absolute; bottom: 65px; left: 50%;
             transform: translateX(-50%);
@@ -120,9 +114,10 @@
             box-shadow: 0 0 24px rgba(129, 216, 208, 0.5);
         }
         .btn.active {
-            border-color: rgba(129, 216, 208, 1);
-            color: rgba(129, 216, 208, 1);
-            box-shadow: 0 0 22px rgba(129, 216, 208, 0.45);
+            border-color: rgba(57, 255, 20, 0.9);
+            color: rgba(57, 255, 20, 1);
+            text-shadow: 0 0 10px rgba(57, 255, 20, 0.8);
+            box-shadow: 0 0 22px rgba(57, 255, 20, 0.35);
         }
  
         #hint {
@@ -212,7 +207,6 @@ const N = 1800;
  
 let analyser, dataArray, audioCtx;
 let audioIntensity = 0;
-// Smoothed intensity for nicer particle response
 let smoothIntensity = 0;
 let idleTime = 0;
 let audioMode = 'idle';
@@ -227,6 +221,10 @@ const GO_TEXT_DURATION = 2000;
  
 let calmMode = false;
 let pointer = { x: -9999, y: -9999, active: false };
+ 
+// Affirmation repulsion field
+let affirmationVisible = false;
+let affirmationRect = null;
  
 const AFFIRMATIONS = [
     "you are exactly where you need to be",
@@ -246,20 +244,23 @@ const AFFIRMATIONS = [
 let affirmIndex = 0, affirmTimer = 0;
 const AFFIRM_INTERVAL = 30;
  
+// NORMAL — Tiffany blues + accent green
 const COLORS_NORMAL = [
     [129, 216, 208],
     [0,   255, 230],
     [0,   200, 255],
     [0,   255, 80],
-    [0,   255, 80],
     [100, 255, 180],
     [129, 216, 208],
 ];
+// CALM = Matrix neon green + bright accents
 const COLORS_CALM = [
-    [109, 196, 188],
-    [0,   180, 160],
-    [40,  180, 180],
-    [80,  200, 150],
+    [0,   255, 65],    // Matrix neon green
+    [57,  255, 20],    // Bright neon
+    [120, 255, 100],   // Light green
+    [0,   255, 65],    // (doubled for more green)
+    [180, 255, 160],   // Pale green
+    [0,   255, 130],   // Green-teal
 ];
  
 const rc = () => {
@@ -280,12 +281,16 @@ window.addEventListener('touchmove', e => {
 window.addEventListener('touchend', () => pointer.active = false);
  
 function enableCalmMode() {
-    calmMode = true; calmBtn.textContent = '☀️ Normal Mode';
-    calmBtn.classList.add('active'); particles.forEach(p => p.color = rc());
+    calmMode = true;
+    calmBtn.textContent = '☀️ Normal Mode';
+    calmBtn.classList.add('active');
+    particles.forEach(p => p.color = rc());
 }
 function disableCalmMode() {
-    calmMode = false; calmBtn.textContent = '🌙 Calm Mode';
-    calmBtn.classList.remove('active'); particles.forEach(p => p.color = rc());
+    calmMode = false;
+    calmBtn.textContent = '🌙 Calm Mode';
+    calmBtn.classList.remove('active');
+    particles.forEach(p => p.color = rc());
 }
 calmBtn.addEventListener('click', () => calmMode ? disableCalmMode() : enableCalmMode());
  
@@ -349,9 +354,9 @@ class P {
     reset() {
         this.x = Math.random() * canvas.width;
         this.y = -Math.random() * canvas.height * 0.5;
-        // Slower calm base — music makes it surge
-        this.vx = (Math.random() - 0.5) * (calmMode ? 0.2 : 0.35);
-        this.vy = Math.random() * (calmMode ? 0.4 : 0.7) + (calmMode ? 0.2 : 0.4);
+        // SLOW gentle calm rain — no spaghetti streaks
+        this.vx = (Math.random() - 0.5) * (calmMode ? 0.15 : 0.25);
+        this.vy = Math.random() * (calmMode ? 0.35 : 0.55) + (calmMode ? 0.2 : 0.3);
         this.life = Math.random();
         this.color = rc();
     }
@@ -362,25 +367,45 @@ class P {
         if (ny > canvas.height) {
             this.x = Math.random() * canvas.width;
             this.y = -Math.random() * 20;
-            this.vx = (Math.random() - 0.5) * (calmMode ? 0.2 : 0.35);
-            this.vy = Math.random() * (calmMode ? 0.4 : 0.7) + (calmMode ? 0.2 : 0.4);
+            this.vx = (Math.random() - 0.5) * (calmMode ? 0.15 : 0.25);
+            this.vy = Math.random() * (calmMode ? 0.35 : 0.55) + (calmMode ? 0.2 : 0.3);
             this.color = rc();
             return;
         }
         if (nx < 0 || nx > canvas.width) this.vx *= -0.5;
  
-        // Minimum speed — never fully stop
-        const minFall = calmMode ? 0.2 : 0.4;
+        // VERY low minimum — gentle floating feel
+        const minFall = calmMode ? 0.2 : 0.3;
         if (this.vy < minFall) this.vy = minFall;
  
+        // Repel from affirmation text
+        if (affirmationVisible && affirmationRect) {
+            const cx = affirmationRect.cx;
+            const cy = affirmationRect.cy;
+            const rw = affirmationRect.rw;
+            const rh = affirmationRect.rh;
+            // Distance from particle to nearest edge of affirmation box
+            const dx = this.x - cx;
+            const dy = this.y - cy;
+            // Check if inside expanded box
+            if (Math.abs(dx) < rw && Math.abs(dy) < rh) {
+                const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+                const strength = Math.min(rw, rh);
+                const force = (1 - Math.min(1, dist/strength)) * 1.5;
+                this.vx += (dx/dist) * force;
+                this.vy += (dy/dist) * force * 0.6;
+            }
+        }
+ 
+        // Pointer repulsion (touch)
         if (pointer.active) {
             const dx = this.x - pointer.x, dy = this.y - pointer.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
             const r = 160 * dpr;
             if (dist < r && dist > 0) {
                 const f = (r - dist) / r;
-                this.vx += (dx/dist)*f*(calmMode ? 1.5 : 3.5);
-                this.vy += (dy/dist)*f*(calmMode ? 1.5 : 3.5);
+                this.vx += (dx/dist)*f*(calmMode ? 1.2 : 2.5);
+                this.vy += (dy/dist)*f*(calmMode ? 1.2 : 2.5);
             }
         }
  
@@ -389,9 +414,9 @@ class P {
     }
     draw(intensity, pulse) {
         const [r, g, b] = this.color;
-        const a = Math.min(1, 0.4 + this.life*0.4 + intensity*0.003 + pulse*0.2);
-        // Small calm base, swells noticeably with the beat
-        const sz = (0.5 + intensity*0.018 + pulse*0.5) * dpr;
+        const a = Math.min(1, 0.45 + this.life*0.4 + intensity*0.003 + pulse*0.2);
+        // SMALL particles like the idle screen
+        const sz = (0.6 + intensity*0.008 + pulse*0.3) * dpr;
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
         ctx.beginPath();
         ctx.arc(this.x, this.y, sz, 0, Math.PI*2);
@@ -407,13 +432,20 @@ function showAffirmation() {
             affirmationEl.style.transition = 'color 1.5s, opacity 1.5s';
             affirmationEl.style.opacity = '1';
             affirmationEl.style.color = calmMode
-                ? 'rgba(150, 220, 210, 0.9)'
+                ? 'rgba(150, 255, 130, 1)'
                 : 'rgba(129, 216, 208, 1)';
             affirmationEl.textContent = text;
+ 
+            // Activate repulsion field
+            affirmationVisible = true;
+            updateAffirmationRect();
+ 
             setTimeout(() => {
                 affirmationEl.style.transition = 'color 2.5s, opacity 2.5s';
                 affirmationEl.style.color = 'rgba(129, 216, 208, 0)';
                 affirmationEl.style.opacity = '0';
+                // Deactivate repulsion after fade
+                setTimeout(() => { affirmationVisible = false; }, 2500);
             }, 6000);
         } else {
             setTimeout(waitForBeat, 100);
@@ -421,6 +453,17 @@ function showAffirmation() {
     };
     waitForBeat();
     affirmIndex++;
+}
+ 
+function updateAffirmationRect() {
+    // Approximate the affirmation text bounding box
+    const rect = affirmationEl.getBoundingClientRect();
+    affirmationRect = {
+        cx: (rect.left + rect.width/2) * dpr,
+        cy: (rect.top + rect.height/2) * dpr,
+        rw: (rect.width/2 + 30) * dpr,
+        rh: (rect.height/2 + 25) * dpr,
+    };
 }
  
 function replayQuest() {
@@ -433,6 +476,7 @@ function replayQuest() {
     hintEl.style.opacity = '1';
     affirmationEl.style.color = 'rgba(129, 216, 208, 0)';
     affirmationEl.style.opacity = '0';
+    affirmationVisible = false;
     showingGoText = false;
     brandEl.classList.remove('hidden');
     particles.forEach(p => p.reset());
@@ -442,9 +486,9 @@ function triggerSessionComplete() {
     sessionComplete = true;
     completeEl.classList.add('show');
     particles.forEach(p => {
-        p.vx = (Math.random()-0.5)*(calmMode ? 6 : 14);
-        p.vy = (Math.random()-0.5)*(calmMode ? 6 : 14);
-        p.color = calmMode ? [80,150,220] : [129, 216, 208];
+        p.vx = (Math.random()-0.5)*(calmMode ? 4 : 8);
+        p.vy = (Math.random()-0.5)*(calmMode ? 4 : 8);
+        p.color = calmMode ? [0, 255, 65] : [129, 216, 208];
     });
     if (currentAudio) {
         setTimeout(() => {
@@ -491,7 +535,6 @@ function animate() {
  
     if (audioMode !== 'idle' && analyser) {
         analyser.getByteFrequencyData(dataArray);
-        // Bass + mid range for stronger music reactivity
         let sum = 0;
         for (let i = 0; i < 20; i++) sum += dataArray[i];
         audioIntensity = sum / 20;
@@ -499,8 +542,7 @@ function animate() {
         audioIntensity *= 0.92;
     }
  
-    // Smooth the intensity so changes feel musical not jittery
-    smoothIntensity += (audioIntensity - smoothIntensity) * 0.15;
+    smoothIntensity += (audioIntensity - smoothIntensity) * 0.12;
  
     if (sessionStartTime && !sessionComplete) {
         const elapsed = (performance.now() - sessionStartTime) / 1000;
@@ -513,13 +555,16 @@ function animate() {
         if (elapsed >= SESSION_DURATION) triggerSessionComplete();
     }
  
+    // Keep affirmation rect updated when visible
+    if (affirmationVisible) updateAffirmationRect();
+ 
     idleTime += calmMode ? 0.008 : 0.018;
     const pulse = audioMode === 'idle' ? (Math.sin(idleTime)*0.5+0.5) : 0;
  
-    // STRONG music influence — calm trickle when quiet, surge on the beat
-    const boost = smoothIntensity*(calmMode ? 0.05 : 0.15) + pulse*(calmMode ? 0.1 : 0.2);
+    // Very gentle music boost — particles flow with the song but stay calm
+    const boost = smoothIntensity*(calmMode ? 0.025 : 0.05) + pulse*(calmMode ? 0.08 : 0.15);
  
-    ctx.fillStyle = calmMode ? 'rgba(0,0,0,0.14)' : 'rgba(0,0,0,0.16)';
+    ctx.fillStyle = calmMode ? 'rgba(0,0,0,0.16)' : 'rgba(0,0,0,0.18)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
  
     ctx.globalCompositeOperation = 'lighter';
