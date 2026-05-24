@@ -34,21 +34,31 @@
         }
         canvas { display: block; width: 100%; height: 100%; }
         
-        #brand {
+                #brand {
             position: absolute; top: 40px; width: 100%;
             text-align: center;
-            color: rgba(0, 140, 200, 0.55);
-            font-size: 21px; letter-spacing: 12px;
+            /* Vibrant Tiffany Blue */
+            color: rgba(129, 216, 208, 1); 
+            /* Increased from 21px to 32px */
+            font-size: 32px; 
+            letter-spacing: 12px;
             font-weight: bold;
-            text-shadow: 0 0 8px rgba(0, 180, 255, 0.15);
+            /* Added a matching Tiffany Blue neon glow */
+            text-shadow: 0 0 12px rgba(129, 216, 208, 0.6), 0 0 24px rgba(129, 216, 208, 0.3);
             pointer-events: none; z-index: 10;
             text-transform: uppercase;
         }
         
         #timer {
-            position: absolute; top: 78px; width: 100%;
-            text-align: center; color: rgba(0, 200, 255, 0.3);
-            font-size: 14px; letter-spacing: 6px;
+            /* Pushed down slightly from 78px to 95px so it doesn't overlap the bigger title */
+            position: absolute; top: 95px; width: 100%;
+            text-align: center; 
+            /* Slightly softer Tiffany Blue so it doesn't outshine the main title */
+            color: rgba(129, 216, 208, 0.8);
+            /* Increased from 14px to 18px */
+            font-size: 18px; 
+            letter-spacing: 8px;
+            text-shadow: 0 0 8px rgba(129, 216, 208, 0.4);
             pointer-events: none; z-index: 10;
         }
         
