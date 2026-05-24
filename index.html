@@ -1,118 +1,113 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>SELF QUEST</title>
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-96x96.png">
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="manifest" href="/site.webmanifest">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23000000'/%3E%3Cdefs%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='10' result='coloredBlur'/%3E%3CfeMerge%3E%3CfeMergeNode in='coloredBlur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Ctext x='256' y='210' font-size='90' font-weight='bold' font-family='Courier New, monospace' text-anchor='middle' fill='%2300d2ff' filter='url(%23glow)' letter-spacing='4'%3ESELF%3C/text%3E%3Ctext x='256' y='320' font-size='90' font-weight='bold' font-family='Courier New, monospace' text-anchor='middle' fill='%2300d2ff' filter='url(%23glow)' letter-spacing='4'%3EQUEST%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23000000'/%3E%3Cdefs%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='10' result='coloredBlur'/%3E%3CfeMerge%3E%3CfeMergeNode in='coloredBlur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Ctext x='256' y='210' font-size='90' font-weight='bold' font-family='Courier New, monospace' text-anchor='middle' fill='%2300d2ff' filter='url(%23glow)' letter-spacing='4'%3ESELF%3C/text%3E%3Ctext x='256' y='320' font-size='90' font-weight='bold' font-family='Courier New, monospace' text-anchor='middle' fill='%2300d2ff' filter='url(%23glow)' letter-spacing='4'%3EQUEST%3C/text%3E%3C/svg%3E">
 
+    <meta name="apple-mobile-web-app-title" content="Self Quest">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
 
-```
-<meta name="apple-mobile-web-app-title" content="Self Quest">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#000000">
-
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23060d1f'/%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='50%25' r='60%25'%3E%3Cstop offset='0%25' stop-color='%230a1a3a'/%3E%3Cstop offset='100%25' stop-color='%23000408'/%3E%3C/radialGradient%3E%3Cfilter id='f'%3E%3CfeGaussianBlur stdDeviation='8'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='512' height='512' rx='80' fill='url(%23g)'/%3E%3Ccircle cx='256' cy='256' r='230' fill='none' stroke='rgba(0%2C180%2C255%2C0.4)' stroke-width='1.5'/%3E%3Ctext x='256' y='318' font-size='320' font-weight='900' font-family='Arial Black' text-anchor='middle' fill='none' stroke='%2300ccff' stroke-width='3' filter='url(%23f)'%3E8%3C/text%3E%3Ctext x='256' y='318' font-size='320' font-weight='900' font-family='Arial Black' text-anchor='middle' fill='none' stroke='%2300eeff' stroke-width='2.5'%3E8%3C/text%3E%3Ccircle cx='256' cy='256' r='6' fill='%2300ff44'/%3E%3C/svg%3E">
-
-<link rel="apple-touch-icon" href="data:image/png;base64,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">
-
-<style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html {
-        width: 100%; height: 100%;
-        background: #000;
-        overflow: hidden;
-        font-family: 'Courier New', monospace;
-        touch-action: none;
-    }
-    canvas { display: block; width: 100%; height: 100%; }
-    #brand {
-        position: absolute; top: 40px; width: 100%;
-        text-align: center;
-        color: rgba(0, 160, 220, 0.6);
-        font-size: 22px; letter-spacing: 12px;
-        font-weight: bold;
-        text-shadow: 0 0 6px rgba(0, 180, 255, 0.15);
-        pointer-events: none; z-index: 10;
-        text-transform: uppercase;
-    }
-    #timer {
-        position: absolute; top: 80px; width: 100%;
-        text-align: center; color: rgba(0,200,255,0.3);
-        font-size: 14px; letter-spacing: 6px;
-        pointer-events: none; z-index: 10;
-    }
-    #affirmation {
-        position: absolute; top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center; color: rgba(0,200,255,0);
-        font-size: 13px; letter-spacing: 3px;
-        pointer-events: none; z-index: 10;
-        width: 85%; line-height: 1.8;
-        transition: color 2s, opacity 2s;
-        text-transform: uppercase;
-    }
-    #controls {
-        position: absolute; bottom: 65px; left: 50%;
-        transform: translateX(-50%);
-        display: flex; flex-direction: column;
-        gap: 15px; z-index: 20;
-        align-items: center; width: 100%;
-    }
-    .btn {
-        background: rgba(0,0,0,0.5);
-        border: 1px solid rgba(0,200,255,0.4);
-        color: rgba(0,200,255,0.8);
-        font-family: 'Courier New', monospace;
-        font-size: 11px; letter-spacing: 4px;
-        padding: 14px 32px; cursor: pointer;
-        transition: all 0.3s; text-transform: uppercase;
-        backdrop-filter: blur(5px);
-    }
-    .btn:hover { border-color: #fff; color: #fff; }
-    .btn.active { border-color: rgba(0,255,200,0.8); color: rgba(0,255,200,1); }
-    #hint {
-        position: absolute; bottom: 20px; width: 100%;
-        text-align: center; color: rgba(0,200,255,0.2);
-        font-size: 9px; letter-spacing: 4px;
-        pointer-events: none; z-index: 10;
-        text-transform: uppercase;
-        transition: opacity 2s;
-    }
-    #complete {
-        position: absolute; inset: 0;
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        z-index: 30; pointer-events: none;
-        opacity: 0; transition: opacity 3s;
-        background: rgba(0,0,0,0.9);
-    }
-    #complete.show { opacity: 1; pointer-events: all; }
-    #complete-text {
-        color: rgba(0,210,255,0.8);
-        font-size: 13px; letter-spacing: 5px;
-        text-transform: uppercase;
-        text-align: center;
-        line-height: 3.2;
-    }
-    #replay-btn {
-        margin-top: 40px; background: transparent;
-        border: 1px solid rgba(0,200,255,0.4);
-        color: rgba(0,200,255,0.7);
-        font-family: 'Courier New', monospace;
-        font-size: 10px; letter-spacing: 5px;
-        padding: 12px 30px; cursor: pointer;
-        text-transform: uppercase;
-    }
-</style>
-```
-
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html {
+            width: 100%; height: 100%;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            touch-action: none;
+        }
+        canvas { display: block; width: 100%; height: 100%; }
+        
+        #brand {
+            position: absolute; top: 40px; width: 100%;
+            text-align: center;
+            color: rgba(0, 140, 200, 0.55);
+            font-size: 21px; letter-spacing: 12px;
+            font-weight: bold;
+            text-shadow: 0 0 8px rgba(0, 180, 255, 0.15);
+            pointer-events: none; z-index: 10;
+            text-transform: uppercase;
+        }
+        
+        #timer {
+            position: absolute; top: 78px; width: 100%;
+            text-align: center; color: rgba(0, 200, 255, 0.3);
+            font-size: 14px; letter-spacing: 6px;
+            pointer-events: none; z-index: 10;
+        }
+        
+        #affirmation {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center; color: rgba(0,200,255,0);
+            font-size: 14px; letter-spacing: 4px;
+            pointer-events: none; z-index: 10;
+            width: 85%; line-height: 2;
+            transition: color 2s, opacity 2s;
+            text-transform: uppercase;
+        }
+        
+        #controls {
+            position: absolute; bottom: 65px; left: 50%;
+            transform: translateX(-50%);
+            display: flex; flex-direction: column;
+            gap: 15px; z-index: 20;
+            align-items: center; width: 100%;
+        }
+        .btn {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(0,200,255,0.4);
+            color: rgba(0,200,255,0.8);
+            font-family: 'Courier New', monospace;
+            font-size: 11px; letter-spacing: 4px;
+            padding: 14px 32px; cursor: pointer;
+            transition: all 0.3s; text-transform: uppercase;
+            backdrop-filter: blur(5px);
+        }
+        .btn:hover { border-color: #fff; color: #fff; }
+        .btn.active { border-color: rgba(0,255,200,0.8); color: rgba(0,255,200,1); }
+        
+        #hint {
+            position: absolute; bottom: 20px; width: 100%;
+            text-align: center; color: rgba(0,200,255,0.2);
+            font-size: 9px; letter-spacing: 4px;
+            pointer-events: none; z-index: 10;
+            text-transform: uppercase;
+            transition: opacity 2s;
+        }
+        #complete {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 30; pointer-events: none;
+            opacity: 0; transition: opacity 3s;
+            background: rgba(0,0,0,0.9);
+        }
+        #complete.show { opacity: 1; pointer-events: all; }
+        #complete-text {
+            color: rgba(0,210,255,0.8);
+            font-size: 13px; letter-spacing: 5px;
+            text-transform: uppercase;
+            text-align: center;
+            line-height: 3.2;
+        }
+        #replay-btn {
+            margin-top: 40px; background: transparent;
+            border: 1px solid rgba(0,200,255,0.4);
+            color: rgba(0,200,255,0.7);
+            font-family: 'Courier New', monospace;
+            font-size: 10px; letter-spacing: 5px;
+            padding: 12px 30px; cursor: pointer;
+            text-transform: uppercase;
+        }
+    </style>
 </head>
 <body>
 
@@ -146,7 +141,7 @@ const affirmationEl = document.getElementById('affirmation');
 const completeEl = document.getElementById('complete');
 const hintEl = document.getElementById('hint');
 
-let dpr, maskData = [], holeData = [];
+let dpr;
 let particles = [];
 const N = 2000;
 
@@ -158,14 +153,12 @@ let sessionStartTime = null;
 let sessionComplete = false;
 const SESSION_DURATION = 255;
 
-let exploding = false;
-let explosionTime = 0;
-const EXPLOSION_DURATION = 3000;
-let idleGlowTime = 0;
+let showingGoText = false;
+let goTextStartTime = 0;
+const GO_TEXT_DURATION = 1500;
+
 let calmMode = false;
 let pointer = { x: -9999, y: -9999, active: false };
-
-let holeCanvas, holeCtx;
 
 const AFFIRMATIONS = [
     "you are exactly where you need to be",
@@ -186,23 +179,13 @@ let affirmIndex = 0, affirmTimer = 0;
 const AFFIRM_INTERVAL = 30;
 
 const COLORS_NORMAL = [
-    [0,   200, 255],
-    [0,   150, 255],
-    [80,  220, 255],
-    [0,   255, 180],
-    [0,   255, 80],
-    [0,   255, 80],
-    [100, 255, 100],
-    [0,   200, 255],
+    [0,   200, 255], [0,   150, 255], [80,  220, 255], [0,   255, 180],
+    [0,   255, 80],  [0,   255, 80],  [100, 255, 100], [0,   200, 255]
 ];
 const COLORS_CALM = [
-    [0,   120, 200],
-    [0,   100, 180],
-    [60,  160, 220],
-    [0,   180, 160],
-    [80,  200, 120],
+    [0,   120, 200], [0,   100, 180], [60,  160, 220], [0,   180, 160], [80,  200, 120]
 ];
-const GREEN = [0, 255, 60];
+
 const rc = () => {
     const p = calmMode ? COLORS_CALM : COLORS_NORMAL;
     return p[Math.floor(Math.random() * p.length)];
@@ -230,36 +213,6 @@ function disableCalmMode() {
 }
 calmBtn.addEventListener('click', () => calmMode ? disableCalmMode() : enableCalmMode());
 
-function triggerExplosion() {
-    exploding = true;
-    explosionTime = performance.now();
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-    const W = canvas.width;
-    const H = canvas.height;
-
-    particles.forEach((p, i) => {
-        let sx, sy, attempts = 0;
-        do {
-            sx = Math.floor(Math.random() * W);
-            sy = Math.floor(Math.random() * H);
-            attempts++;
-        } while (maskData[sy * W + sx] !== 1 && attempts < 30);
-        if (attempts >= 30) { sx = cx; sy = cy; }
-
-        p.x = sx; p.y = sy;
-        const dx = sx - cx, dy = sy - cy;
-        const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-        const speed = Math.random() * 28 + 10;
-        p.vx = (dx/dist)*speed + (Math.random()-0.5)*6;
-        p.vy = (dy/dist)*speed + (Math.random()-0.5)*6;
-
-        const greens = [[0,255,60],[0,255,120],[80,255,80],[0,200,80],[120,255,0]];
-        p.color = [...greens[Math.floor(Math.random()*greens.length)]];
-        p.life = 0.8 + Math.random()*0.2;
-    });
-}
-
 playBtn.addEventListener('click', async () => {
     if (audioMode === 'track') {
         if (currentAudio) currentAudio.pause();
@@ -269,6 +222,7 @@ playBtn.addEventListener('click', async () => {
         sessionStartTime = null;
         timerEl.textContent = '04:15';
         hintEl.style.opacity = '1';
+        showingGoText = false;
         return;
     }
     try {
@@ -287,11 +241,15 @@ playBtn.addEventListener('click', async () => {
         audioMode = 'track';
         sessionStartTime = performance.now();
         sessionComplete = false;
+        
+        showingGoText = true;
+        goTextStartTime = performance.now();
+        
         affirmIndex = 0; affirmTimer = 0;
         playBtn.textContent = '■ End Quest';
         playBtn.classList.add('active');
         hintEl.style.opacity = '0';
-        triggerExplosion();
+        
         setTimeout(() => showAffirmation(), 3500);
     } catch(e) {
         playBtn.textContent = 'Audio Error';
@@ -303,55 +261,6 @@ function resize() {
     dpr = window.devicePixelRatio || 1;
     canvas.width = window.innerWidth * dpr;
     canvas.height = window.innerHeight * dpr;
-
-    const W = canvas.width, H = canvas.height;
-    const sz = Math.min(W, H) * 0.72;
-    const cx = W / 2, cy = H / 2;
-
-    const mc = document.createElement('canvas');
-    mc.width = W; mc.height = H;
-    const mctx = mc.getContext('2d');
-    mctx.fillStyle = '#fff';
-    mctx.font = `900 ${sz}px sans-serif`;
-    mctx.textAlign = 'center'; mctx.textBaseline = 'middle';
-    mctx.fillText('8', cx, cy);
-    const d = mctx.getImageData(0, 0, W, H).data;
-    maskData = new Uint8Array(W * H);
-    for (let i = 0; i < d.length; i += 4) maskData[i/4] = d[i] > 128 ? 1 : 0;
-
-    const mc2 = document.createElement('canvas');
-    mc2.width = W; mc2.height = H;
-    const mc2ctx = mc2.getContext('2d');
-    mc2ctx.fillStyle = '#fff';
-    mc2ctx.font = `900 ${sz}px sans-serif`;
-    mc2ctx.textAlign = 'center'; mc2ctx.textBaseline = 'middle';
-    mc2ctx.fillText('8', cx, cy);
-    mc2ctx.globalCompositeOperation = 'destination-out';
-    mc2ctx.fillStyle = 'rgba(0,0,0,1)';
-    mc2ctx.font = `900 ${sz * 0.88}px sans-serif`;
-    mc2ctx.textAlign = 'center'; mc2ctx.textBaseline = 'middle';
-    mc2ctx.fillText('8', cx, cy + sz * 0.004);
-    mc2ctx.globalCompositeOperation = 'source-over';
-
-    holeCanvas = document.createElement('canvas');
-    holeCanvas.width = W; holeCanvas.height = H;
-    holeCtx = holeCanvas.getContext('2d');
-    holeCtx.fillStyle = '#000';
-    holeCtx.fillRect(0, 0, W, H);
-    holeCtx.globalCompositeOperation = 'destination-out';
-    holeCtx.drawImage(mc2, 0, 0);
-    holeCtx.globalCompositeOperation = 'source-over';
-
-    const mc3 = document.createElement('canvas');
-    mc3.width = W; mc3.height = H;
-    const mc3ctx = mc3.getContext('2d');
-    mc3ctx.fillStyle = '#fff';
-    mc3ctx.font = `900 ${sz}px sans-serif`;
-    mc3ctx.textAlign = 'center'; mc3ctx.textBaseline = 'middle';
-    mc3ctx.fillText('8', cx, cy);
-    holeCtx.globalCompositeOperation = 'destination-in';
-    holeCtx.drawImage(mc3, 0, 0);
-    holeCtx.globalCompositeOperation = 'source-over';
 
     particles = [];
     for (let i = 0; i < N; i++) particles.push(new P(true));
@@ -371,29 +280,6 @@ class P {
         this.color = rc();
     }
     update(boost) {
-        if (exploding) {
-            const elapsed = performance.now() - explosionTime;
-            const progress = Math.min(1, elapsed / EXPLOSION_DURATION);
-            this.vy += 0.3;
-            this.vx *= 0.97; this.vy *= 0.97;
-            this.x += this.vx; this.y += this.vy;
-            if (this.x < 0) this.x = canvas.width;
-            if (this.x > canvas.width) this.x = 0;
-            if (progress > 0.7) {
-                const t = (progress - 0.7) / 0.3;
-                this.vx += (0 - this.vx) * t * 0.05;
-                this.vy += (1.2 - this.vy) * t * 0.03;
-            }
-            if (this.y > canvas.height + 20) {
-                this.x = Math.random() * canvas.width;
-                this.y = -Math.random() * 20;
-                this.vx = (Math.random() - 0.5) * 0.8;
-                this.vy = Math.random() * 1.6 + 1.0;
-                this.color = rc();
-            }
-            return;
-        }
-
         let nx = this.x + this.vx;
         let ny = this.y + this.vy + boost;
 
@@ -410,13 +296,8 @@ class P {
         const minFall = calmMode ? 0.5 : 1.0;
         if (this.vy < minFall) this.vy = minFall;
 
-        const idx = Math.floor(ny) * canvas.width + Math.floor(nx);
-        if (maskData[idx] === 1) {
-            this.vx += this.x < canvas.width / 2 ? -0.5 : 0.5;
-            this.vy *= 0.97;
-        } else {
-            this.vx *= 0.98;
-        }
+        this.vx *= 0.98;
+        
         if (pointer.active) {
             const dx = this.x - pointer.x, dy = this.y - pointer.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
@@ -448,9 +329,7 @@ function showAffirmation() {
         if (audioIntensity > 40 || audioMode === 'idle') {
             affirmationEl.style.transition = 'color 1.5s, opacity 1.5s';
             affirmationEl.style.opacity = '1';
-            affirmationEl.style.color = calmMode
-                ? 'rgba(150,180,255,0.55)'
-                : 'rgba(0,220,255,0.65)';
+            affirmationEl.style.color = calmMode ? 'rgba(150,180,255,0.55)' : 'rgba(0,210,255,0.65)';
             affirmationEl.textContent = text;
             setTimeout(() => {
                 affirmationEl.style.transition = 'color 2.5s, opacity 2.5s';
@@ -475,7 +354,7 @@ function replayQuest() {
     hintEl.style.opacity = '1';
     affirmationEl.style.color = 'rgba(0,200,255,0)';
     affirmationEl.style.opacity = '0';
-    exploding = false;
+    showingGoText = false;
     particles.forEach(p => p.reset());
 }
 
@@ -499,57 +378,26 @@ function triggerSessionComplete() {
     }
 }
 
-function drawIdleEight() {
-    idleGlowTime += 0.02;
-    const pulse = Math.sin(idleGlowTime) * 0.5 + 0.5;
-    const sz = Math.min(canvas.width, canvas.height) * 0.72;
-    ctx.save();
-    ctx.globalAlpha = 0.25 + pulse * 0.35;
-    ctx.strokeStyle = 'rgba(0,200,255,1)';
-    ctx.lineWidth = 2.5 * dpr;
-    ctx.shadowBlur = 0;
-    ctx.font = `900 ${sz}px sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.strokeText('8', canvas.width/2, canvas.height/2);
-    ctx.restore();
-}
-
-function drawExplosionGlow() {
-    const elapsed = performance.now() - explosionTime;
-    const progress = elapsed / EXPLOSION_DURATION;
-    if (progress < 1) {
-        const sz = Math.min(canvas.width, canvas.height) * 0.72;
+function drawGoText() {
+    const elapsed = performance.now() - goTextStartTime;
+    if (elapsed < GO_TEXT_DURATION) {
+        const progress = elapsed / GO_TEXT_DURATION;
+        const sz = Math.min(canvas.width, canvas.height) * 0.25;
+        
         ctx.save();
-        if (progress < 0.15) {
-            const flashAlpha = (0.15 - progress) / 0.15;
-            ctx.globalAlpha = flashAlpha * 0.9;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 6 * dpr;
-            ctx.shadowColor = '#00ff44';
-            ctx.shadowBlur = 40 * dpr;
-            ctx.font = `900 ${sz}px sans-serif`;
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.strokeText('8', canvas.width/2, canvas.height/2);
-        }
-        const alpha = Math.max(0, (1-progress)*0.4);
+        const alpha = Math.max(0, 1 - progress);
         ctx.globalAlpha = alpha;
-        ctx.strokeStyle = 'rgba(0,255,80,1)';
-        ctx.lineWidth = 2.5 * dpr;
-        ctx.shadowColor = 'rgba(0,255,80,1)';
-        ctx.shadowBlur = 12 * dpr * (1-progress);
+        ctx.strokeStyle = 'rgba(0, 255, 180, 1)';
+        ctx.lineWidth = 4 * dpr;
+        ctx.shadowColor = 'rgba(0, 255, 180, 0.8)';
+        ctx.shadowBlur = 20 * dpr;
         ctx.font = `900 ${sz}px sans-serif`;
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.strokeText('8', canvas.width/2, canvas.height/2);
+        ctx.strokeText('Go!', canvas.width / 2, canvas.height / 2);
         ctx.restore();
     } else {
-        exploding = false;
-        particles.forEach(p => { p.color = rc(); });
+        showingGoText = false;
     }
-}
-
-function punchHoles() {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.drawImage(holeCanvas, 0, 0);
 }
 
 function animate() {
@@ -582,20 +430,12 @@ function animate() {
     ctx.fillStyle = calmMode ? 'rgba(0,0,0,0.14)' : 'rgba(0,0,0,0.16)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    if (audioMode === 'idle' && !exploding && !sessionComplete) {
-        drawIdleEight();
-    }
-
     ctx.globalCompositeOperation = 'lighter';
     particles.forEach(p => { p.update(boost); p.draw(audioIntensity, pulse); });
     ctx.globalCompositeOperation = 'source-over';
 
-    if (audioMode === 'idle' && !exploding && holeCanvas) {
-        punchHoles();
-    }
-
-    if (exploding) {
-        drawExplosionGlow();
+    if (showingGoText) {
+        drawGoText();
     }
 }
 
@@ -603,6 +443,5 @@ window.addEventListener('resize', resize);
 resize();
 animate();
 </script>
-
 </body>
 </html>
