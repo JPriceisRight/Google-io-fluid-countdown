@@ -17,7 +17,7 @@
     <meta name="theme-color" content="#000000">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="icon" href="apple-touch-icon.png">
-
+ 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html {
@@ -27,8 +27,7 @@
             font-family: 'Courier New', monospace;
             touch-action: none;
         }
-
-        /* Canvas sits behind everything */
+ 
         canvas {
             display: block;
             position: absolute;
@@ -36,39 +35,38 @@
             width: 100%; height: 100%;
             z-index: 1;
         }
-
-        /* SELF QUEST — big neon title ON TOP of particles */
+ 
+        /* SELF QUEST — SOLID FILLED neon letters, sharp like a real sign */
         #brand {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -58%);
+            transform: translate(-50%, -55%);
             text-align: center;
             font-family: 'Arial Rounded MT Bold', 'Nunito', 'Arial Black', sans-serif;
-            font-size: clamp(52px, 15vw, 88px);
+            font-size: clamp(64px, 18vw, 120px);
             font-weight: 900;
-            letter-spacing: 6px;
-            line-height: 1.1;
+            letter-spacing: 3px;
+            line-height: 0.95;
             text-transform: uppercase;
             pointer-events: none;
             z-index: 10;
             transition: opacity 1.5s ease;
-            /* Tiffany neon glow effect */
-            color: rgba(129, 216, 208, 1);
+            white-space: nowrap;
+ 
+            /* SOLID FILLED Tiffany blue — crisp opaque letters */
+            color: rgb(60, 240, 230);
+            -webkit-text-stroke: 0;
+ 
+            /* Tight glow halo — keeps letters sharp and readable */
             text-shadow:
-                0 0 10px rgba(129, 216, 208, 1),
-                0 0 20px rgba(129, 216, 208, 0.9),
-                0 0 40px rgba(129, 216, 208, 0.7),
-                0 0 80px rgba(0, 220, 210, 0.5),
-                0 0 120px rgba(0, 200, 200, 0.3);
-            -webkit-text-stroke: 1px rgba(200, 255, 255, 0.4);
+                0 0 6px rgba(60, 240, 230, 1),
+                0 0 16px rgba(60, 240, 230, 0.7),
+                0 0 30px rgba(0, 200, 200, 0.35);
         }
-        #brand.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        /* Timer — subtle, top center */
+        #brand.hidden { opacity: 0; }
+ 
+        /* Timer */
         #timer {
             position: absolute; top: 36px; width: 100%;
             text-align: center;
@@ -78,8 +76,8 @@
             pointer-events: none;
             z-index: 15;
         }
-
-        /* Affirmations — bright Tiffany, center screen, above particles */
+ 
+        /* Affirmations */
         #affirmation {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
@@ -91,11 +89,11 @@
             transition: color 2s, opacity 2s;
             text-transform: uppercase;
             text-shadow:
-                0 0 16px rgba(129, 216, 208, 1),
-                0 0 32px rgba(129, 216, 208, 0.6);
+                0 0 12px rgba(129, 216, 208, 1),
+                0 0 26px rgba(129, 216, 208, 0.6);
         }
-
-        /* Controls */
+ 
+        /* Buttons */
         #controls {
             position: absolute; bottom: 65px; left: 50%;
             transform: translateX(-50%);
@@ -104,7 +102,7 @@
             align-items: center; width: 100%;
         }
         .btn {
-            background: rgba(0, 0, 0, 0.45);
+            background: rgba(0, 0, 0, 0.5);
             border: 1.5px solid rgba(255, 255, 255, 0.75);
             color: rgba(129, 216, 208, 1);
             font-family: 'Courier New', monospace;
@@ -126,7 +124,7 @@
             color: rgba(129, 216, 208, 1);
             box-shadow: 0 0 22px rgba(129, 216, 208, 0.45);
         }
-
+ 
         #hint {
             position: absolute; bottom: 20px; width: 100%;
             text-align: center; color: rgba(129, 216, 208, 0.22);
@@ -135,8 +133,7 @@
             text-transform: uppercase;
             transition: opacity 2s;
         }
-
-        /* Session complete */
+ 
         #complete {
             position: absolute; inset: 0;
             display: flex; flex-direction: column;
@@ -152,7 +149,7 @@
             text-transform: uppercase;
             text-align: center;
             line-height: 3.2;
-            text-shadow: 0 0 24px rgba(129, 216, 208, 0.6);
+            text-shadow: 0 0 18px rgba(129, 216, 208, 0.6);
         }
         #replay-btn {
             margin-top: 40px; background: transparent;
@@ -165,7 +162,7 @@
             text-shadow: 0 0 10px rgba(129, 216, 208, 0.5);
         }
         #replay-btn:hover { border-color: #fff; color: #fff; }
-
+ 
         #small-doses {
             position: absolute; bottom: 6px; right: 16px;
             color: rgba(129, 216, 208, 0.1);
@@ -176,22 +173,19 @@
     </style>
 </head>
 <body>
-
+ 
 <canvas id="c"></canvas>
-
-<!-- SELF QUEST on top of particles -->
 <div id="brand">SELF<br>QUEST</div>
-
 <div id="timer">04:15</div>
 <div id="affirmation"></div>
-
+ 
 <div id="controls">
     <button class="btn" id="play-btn">▶ Begin Quest</button>
     <button class="btn" id="calm-btn">🌙 Calm Mode</button>
 </div>
 <div id="hint">touch · move · breathe</div>
 <div id="small-doses">Small Doses</div>
-
+ 
 <div id="complete">
     <div id="complete-text">
         your quest is complete<br>
@@ -200,7 +194,7 @@
     </div>
     <button id="replay-btn" onclick="replayQuest()">↺ Begin Again</button>
 </div>
-
+ 
 <script>
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
@@ -211,27 +205,29 @@ const affirmationEl = document.getElementById('affirmation');
 const completeEl = document.getElementById('complete');
 const hintEl = document.getElementById('hint');
 const brandEl = document.getElementById('brand');
-
+ 
 let dpr;
 let particles = [];
-const N = 2000;
-
+const N = 1800;
+ 
 let analyser, dataArray, audioCtx;
-let audioIntensity = 0, idleTime = 0;
+let audioIntensity = 0;
+// Smoothed intensity for nicer particle response
+let smoothIntensity = 0;
+let idleTime = 0;
 let audioMode = 'idle';
 let currentAudio = null;
 let sessionStartTime = null;
 let sessionComplete = false;
 const SESSION_DURATION = 255;
-
-// Go text
+ 
 let showingGoText = false;
 let goTextStartTime = 0;
 const GO_TEXT_DURATION = 2000;
-
+ 
 let calmMode = false;
 let pointer = { x: -9999, y: -9999, active: false };
-
+ 
 const AFFIRMATIONS = [
     "you are exactly where you need to be",
     "this moment belongs to you",
@@ -249,7 +245,7 @@ const AFFIRMATIONS = [
 ];
 let affirmIndex = 0, affirmTimer = 0;
 const AFFIRM_INTERVAL = 30;
-
+ 
 const COLORS_NORMAL = [
     [129, 216, 208],
     [0,   255, 230],
@@ -265,12 +261,12 @@ const COLORS_CALM = [
     [40,  180, 180],
     [80,  200, 150],
 ];
-
+ 
 const rc = () => {
     const p = calmMode ? COLORS_CALM : COLORS_NORMAL;
     return p[Math.floor(Math.random() * p.length)];
 };
-
+ 
 window.addEventListener('mousemove', e => {
     pointer.x = e.clientX * dpr; pointer.y = e.clientY * dpr; pointer.active = true;
 });
@@ -282,7 +278,7 @@ window.addEventListener('touchmove', e => {
     pointer.active = true;
 }, { passive: false });
 window.addEventListener('touchend', () => pointer.active = false);
-
+ 
 function enableCalmMode() {
     calmMode = true; calmBtn.textContent = '☀️ Normal Mode';
     calmBtn.classList.add('active'); particles.forEach(p => p.color = rc());
@@ -292,7 +288,7 @@ function disableCalmMode() {
     calmBtn.classList.remove('active'); particles.forEach(p => p.color = rc());
 }
 calmBtn.addEventListener('click', () => calmMode ? disableCalmMode() : enableCalmMode());
-
+ 
 playBtn.addEventListener('click', async () => {
     if (audioMode === 'track') {
         if (currentAudio) currentAudio.pause();
@@ -326,8 +322,7 @@ playBtn.addEventListener('click', async () => {
         playBtn.textContent = '■ End Quest';
         playBtn.classList.add('active');
         hintEl.style.opacity = '0';
-
-        // Go! flash then fade brand
+ 
         showingGoText = true;
         goTextStartTime = performance.now();
         setTimeout(() => brandEl.classList.add('hidden'), 1800);
@@ -337,7 +332,7 @@ playBtn.addEventListener('click', async () => {
         console.error(e);
     }
 });
-
+ 
 function resize() {
     dpr = window.devicePixelRatio || 1;
     canvas.width = window.innerWidth * dpr;
@@ -345,7 +340,7 @@ function resize() {
     particles = [];
     for (let i = 0; i < N; i++) particles.push(new P(true));
 }
-
+ 
 class P {
     constructor(scattered) {
         this.color = rc(); this.reset();
@@ -354,28 +349,30 @@ class P {
     reset() {
         this.x = Math.random() * canvas.width;
         this.y = -Math.random() * canvas.height * 0.5;
-        this.vx = (Math.random() - 0.5) * (calmMode ? 0.4 : 0.9);
-        this.vy = Math.random() * (calmMode ? 1.0 : 2.0) + (calmMode ? 0.6 : 1.2);
+        // Slower calm base — music makes it surge
+        this.vx = (Math.random() - 0.5) * (calmMode ? 0.2 : 0.35);
+        this.vy = Math.random() * (calmMode ? 0.4 : 0.7) + (calmMode ? 0.2 : 0.4);
         this.life = Math.random();
         this.color = rc();
     }
     update(boost) {
         let nx = this.x + this.vx;
         let ny = this.y + this.vy + boost;
-
+ 
         if (ny > canvas.height) {
             this.x = Math.random() * canvas.width;
             this.y = -Math.random() * 20;
-            this.vx = (Math.random() - 0.5) * (calmMode ? 0.4 : 0.9);
-            this.vy = Math.random() * (calmMode ? 1.0 : 2.0) + (calmMode ? 0.6 : 1.2);
+            this.vx = (Math.random() - 0.5) * (calmMode ? 0.2 : 0.35);
+            this.vy = Math.random() * (calmMode ? 0.4 : 0.7) + (calmMode ? 0.2 : 0.4);
             this.color = rc();
             return;
         }
         if (nx < 0 || nx > canvas.width) this.vx *= -0.5;
-
-        const minFall = calmMode ? 0.6 : 1.2;
+ 
+        // Minimum speed — never fully stop
+        const minFall = calmMode ? 0.2 : 0.4;
         if (this.vy < minFall) this.vy = minFall;
-
+ 
         if (pointer.active) {
             const dx = this.x - pointer.x, dy = this.y - pointer.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
@@ -386,21 +383,22 @@ class P {
                 this.vy += (dy/dist)*f*(calmMode ? 1.5 : 3.5);
             }
         }
-
+ 
         this.x += this.vx;
         this.y += this.vy + boost;
     }
     draw(intensity, pulse) {
         const [r, g, b] = this.color;
-        const a = Math.min(1, 0.45 + this.life*0.45 + intensity*0.004 + pulse*0.25);
-        const sz = (1.2 + intensity*0.009 + pulse*0.9) * dpr;
+        const a = Math.min(1, 0.4 + this.life*0.4 + intensity*0.003 + pulse*0.2);
+        // Small calm base, swells noticeably with the beat
+        const sz = (0.5 + intensity*0.018 + pulse*0.5) * dpr;
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
         ctx.beginPath();
         ctx.arc(this.x, this.y, sz, 0, Math.PI*2);
         ctx.fill();
     }
 }
-
+ 
 function showAffirmation() {
     if (sessionComplete) return;
     const text = AFFIRMATIONS[affirmIndex % AFFIRMATIONS.length];
@@ -424,7 +422,7 @@ function showAffirmation() {
     waitForBeat();
     affirmIndex++;
 }
-
+ 
 function replayQuest() {
     completeEl.classList.remove('show');
     sessionStartTime = null; sessionComplete = false;
@@ -439,7 +437,7 @@ function replayQuest() {
     brandEl.classList.remove('hidden');
     particles.forEach(p => p.reset());
 }
-
+ 
 function triggerSessionComplete() {
     sessionComplete = true;
     completeEl.classList.add('show');
@@ -459,8 +457,7 @@ function triggerSessionComplete() {
         }, 2000);
     }
 }
-
-// Go! flash on canvas
+ 
 function drawGoText() {
     const elapsed = performance.now() - goTextStartTime;
     if (elapsed < GO_TEXT_DURATION) {
@@ -488,19 +485,23 @@ function drawGoText() {
         showingGoText = false;
     }
 }
-
+ 
 function animate() {
     requestAnimationFrame(animate);
-
+ 
     if (audioMode !== 'idle' && analyser) {
         analyser.getByteFrequencyData(dataArray);
+        // Bass + mid range for stronger music reactivity
         let sum = 0;
-        for (let i = 0; i < 12; i++) sum += dataArray[i];
-        audioIntensity = sum / 12;
+        for (let i = 0; i < 20; i++) sum += dataArray[i];
+        audioIntensity = sum / 20;
     } else {
         audioIntensity *= 0.92;
     }
-
+ 
+    // Smooth the intensity so changes feel musical not jittery
+    smoothIntensity += (audioIntensity - smoothIntensity) * 0.15;
+ 
     if (sessionStartTime && !sessionComplete) {
         const elapsed = (performance.now() - sessionStartTime) / 1000;
         const remaining = Math.max(0, SESSION_DURATION - elapsed);
@@ -511,21 +512,23 @@ function animate() {
         if (affirmTimer >= AFFIRM_INTERVAL) { affirmTimer = 0; showAffirmation(); }
         if (elapsed >= SESSION_DURATION) triggerSessionComplete();
     }
-
+ 
     idleTime += calmMode ? 0.008 : 0.018;
     const pulse = audioMode === 'idle' ? (Math.sin(idleTime)*0.5+0.5) : 0;
-    const boost = audioIntensity*(calmMode?0.02:0.04) + pulse*(calmMode?0.15:0.3);
-
+ 
+    // STRONG music influence — calm trickle when quiet, surge on the beat
+    const boost = smoothIntensity*(calmMode ? 0.05 : 0.15) + pulse*(calmMode ? 0.1 : 0.2);
+ 
     ctx.fillStyle = calmMode ? 'rgba(0,0,0,0.14)' : 'rgba(0,0,0,0.16)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+ 
     ctx.globalCompositeOperation = 'lighter';
-    particles.forEach(p => { p.update(boost); p.draw(audioIntensity, pulse); });
+    particles.forEach(p => { p.update(boost); p.draw(smoothIntensity, pulse); });
     ctx.globalCompositeOperation = 'source-over';
-
+ 
     if (showingGoText) drawGoText();
 }
-
+ 
 window.addEventListener('resize', resize);
 resize();
 animate();
