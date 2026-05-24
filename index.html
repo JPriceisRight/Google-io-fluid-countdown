@@ -290,46 +290,48 @@ class P {
         this.color = rc(); this.reset();
         if (scattered) this.y = Math.random() * canvas.height;
     }
+    
     reset() {
         this.x = Math.random() * canvas.width;
         this.y = -Math.random() * canvas.height * 0.5;
-        this.vx = (Math.random() - 0.5) * (calmMode ? 0.4 : 0.8);
-        this.vy = Math.random() * (calmMode ? 0.8 : 1.6) + (calmMode ? 0.5 : 1.0);
+        this.vx = (Math.random() - 0.5) * 0.5;
+        
+        // SLOWER BASE GRAVITY: Makes them drift peacefully
+        this.vy = Math.random() * (calmMode ? 0.2 : 0.4) + (calmMode ? 0.2 : 0.3); 
         this.life = Math.random();
         this.color = rc();
     }
+    
     update(boost) {
-        let nx = this.x + this.vx;
-        let ny = this.y + this.vy + boost;
-
-        if (ny > canvas.height) {
-            this.x = Math.random() * canvas.width;
-            this.y = -Math.random() * 20;
-            this.vx = (Math.random() - 0.5) * (calmMode ? 0.4 : 0.8);
-            this.vy = Math.random() * (calmMode ? 0.8 : 1.6) + (calmMode ? 0.5 : 1.0);
-            this.color = rc();
-            return;
-        }
-        if (nx < 0 || nx > canvas.width) this.vx *= -0.5;
-
-        const minFall = calmMode ? 0.5 : 1.0;
-        if (this.vy < minFall) this.vy = minFall;
-
-        this.vx *= 0.98;
+        // Smoothly pull particles back to a SLOW falling speed after they get blasted
+        const targetVy = calmMode ? 0.3 : 0.5; 
+        this.vy += (targetVy - this.vy) * 0.05; 
+        
+        this.vx *= 0.94; // Friction to slow down horizontal movement
         
         if (pointer.active) {
             const dx = this.x - pointer.x, dy = this.y - pointer.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
-            const r = 160 * dpr;
+            const r = 180 * dpr; // Slightly larger touch area for easier bursting
+            
             if (dist < r && dist > 0) {
                 const f = (r - dist) / r;
-                this.vx += (dx/dist)*f*(calmMode ? 1.2 : 2.5);
-                this.vy += (dy/dist)*f*(calmMode ? 1.2 : 2.5);
+                // MASSIVE BURST MULTIPLIER: Touching them creates an explosion effect
+                this.vx += (dx/dist) * f * (calmMode ? 6 : 18);
+                this.vy += (dy/dist) * f * (calmMode ? 6 : 18);
             }
         }
+        
         this.x += this.vx;
         this.y += this.vy + boost;
+
+        // Reset the particle if it falls off the bottom OR gets blasted off the sides/top
+        if (this.y > canvas.height + 20 || this.y < -150 || this.x < -50 || this.x > canvas.width + 50) {
+            this.reset();
+            this.y = -20; // Drop from the top again
+        }
     }
+    
     draw(intensity, pulse) {
         const [r, g, b] = this.color;
         const a = Math.min(1, 0.4 + this.life*0.45 + intensity*0.005 + pulse*0.3);
@@ -340,7 +342,6 @@ class P {
         ctx.fill();
     }
 }
-
 function showAffirmation() {
     if (sessionComplete) return;
     const text = AFFIRMATIONS[affirmIndex % AFFIRMATIONS.length];
@@ -407,11 +408,16 @@ function drawGoText() {
         const alpha = Math.max(0, 1 - progress);
         ctx.globalAlpha = alpha;
         
+        // Solid neon green color
         ctx.strokeStyle = 'rgba(57, 255, 20, 1)';     
-        ctx.shadowColor = 'rgba(57, 255, 20, 0.8)';   
         
-        ctx.lineWidth = 4 * dpr;
-        ctx.shadowBlur = 20 * dpr;
+        // Lowered shadow opacity so it doesn't bleed
+        ctx.shadowColor = 'rgba(57, 255, 20, 0.3)';   
+        
+        // SHARPENED SETTINGS: Thinner line, drastically reduced blur
+        ctx.lineWidth = 2.5 * dpr; 
+        ctx.shadowBlur = 4 * dpr; 
+        
         ctx.font = `900 ${sz}px sans-serif`;
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.strokeText('Go!', canvas.width / 2, canvas.height / 2);
