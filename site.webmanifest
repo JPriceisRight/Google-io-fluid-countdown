@@ -1,5 +1,5 @@
 {
-  "id": "/?source=pwa",
+  "id": "https://selfquest.app/",
   "name": "Self Quest: Small Doses",
   "short_name": "Self Quest",
   "start_url": "/",
@@ -13,7 +13,7 @@
   "lang": "en-US",
   "dir": "ltr",
   "categories": ["health", "lifestyle", "entertainment", "music"],
- "icons": [
+  "icons": [
     {
       "src": "android-launchericon-512-512.png",
       "sizes": "512x512",
@@ -56,7 +56,7 @@
       "type": "image/png",
       "purpose": "any"
     }
-  ]
+  ],
   "screenshots": [
     {
       "src": "screenshot1.png",
