@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.selfquest.smalldoses",
+        "sha256_cert_fingerprints": ["48:2B:7E:85:95:88:14:F6:F6:F5:95:61:A8:37:B6:71:09:C9:F6:4E:34:F7:2A:4A:FD:84:FC:DE:34:86:51:70"]
+      }
+    }]
