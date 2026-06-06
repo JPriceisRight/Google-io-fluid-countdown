@@ -534,8 +534,8 @@ function animate() {
     const pulse=audioMode==='idle'?(Math.sin(idleTime)*0.5+0.5):0;
     const musicPulse=Math.min(1,smoothIntensity/80);
 
-    // Galaxy needs less trail persistence so dots stay crisp, not smeared
-    ctx.fillStyle=questActive?'rgba(0,0,0,0.28)':'rgba(0,0,0,0.20)';
+    // Higher alpha = faster trail clear = no ghost streaks on moving dots
+    ctx.fillStyle=questActive?'rgba(0,0,0,0.55)':'rgba(0,0,0,0.20)';
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
     ctx.globalCompositeOperation='lighter';
