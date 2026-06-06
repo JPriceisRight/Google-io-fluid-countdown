@@ -295,15 +295,15 @@ class SpaceDust {
 }
 let scattered = false; // track if reset was scattered
 
-// ── CALM: BARELY MOVING STAGNANT DOTS (unchanged) ─────────────────────────
+// ── CALM: SLOW UPWARD DRIFT DOTS WITH TOUCH RESPONSE ─────────────────────
 class CalmDot {
     constructor(){this.color=rc();this.reset(true);}
     reset(scattered){
         this.x=Math.random()*canvas.width;
-        this.y=scattered?Math.random()*canvas.height:Math.random()*canvas.height;
-        const spd=Math.random()*0.06+0.01; // ultra slow
-        const ang=Math.random()*Math.PI*2;
-        this.vx=Math.cos(ang)*spd; this.vy=Math.sin(ang)*spd;
+        this.y=scattered?Math.random()*canvas.height:canvas.height+Math.random()*50*dpr;
+        // Gentle upward drift — half speed of quest particles
+        this.vx=(Math.random()-0.5)*0.18;
+        this.vy=-(Math.random()*0.18+0.06); // negative = upward
         this.size=Math.random()*0.55+0.18;
         this.alpha=Math.random()*0.45+0.3;
         this.color=rc();
@@ -312,13 +312,42 @@ class CalmDot {
     }
     update(){
         this.twinkle+=this.twinkleSpd;
+
+        // Touch/cursor repulsion — same as quest particles
+        if(pointer.active){
+            const dx=this.x-pointer.x,dy=this.y-pointer.y;
+            const dist=Math.sqrt(dx*dx+dy*dy);
+            const swipeSpd=Math.sqrt(pointer.vx*pointer.vx+pointer.vy*pointer.vy);
+            const rep=100*dpr;
+            if(dist<rep&&dist>0){
+                const f=(rep-dist)/rep;
+                if(swipeSpd>2){
+                    this.vx+=(dx/dist)*f*swipeSpd*0.12;
+                    this.vy+=(dy/dist)*f*swipeSpd*0.12;
+                } else {
+                    this.vx+=(dx/dist)*f*0.28;
+                    this.vy+=(dy/dist)*f*0.28;
+                }
+            }
+        }
+
         this.x+=this.vx; this.y+=this.vy;
-        this.vx*=0.992; this.vy*=0.992;
-        // Keep barely alive
-        const spd=Math.sqrt(this.vx*this.vx+this.vy*this.vy);
-        if(spd<0.005){const a=Math.random()*Math.PI*2;this.vx+=Math.cos(a)*0.008;this.vy+=Math.sin(a)*0.008;}
+
+        // Dampen horizontal but preserve gentle upward pull
+        this.vx*=0.988;
+        this.vy*=0.992;
+        if(this.vy>-0.04) this.vy=-0.04-Math.random()*0.05; // always drifting up
+
+        // Wrap sides
         if(this.x<0)this.x=canvas.width; if(this.x>canvas.width)this.x=0;
-        if(this.y<0)this.y=canvas.height; if(this.y>canvas.height)this.y=0;
+        // Reset from bottom when floats off top
+        if(this.y<-10*dpr){
+            this.x=Math.random()*canvas.width;
+            this.y=canvas.height+Math.random()*20*dpr;
+            this.vx=(Math.random()-0.5)*0.18;
+            this.vy=-(Math.random()*0.18+0.06);
+            this.color=rc();
+        }
     }
     draw(musicPulse){
         const [r,g,b]=this.color;
@@ -509,10 +538,10 @@ function animate(){
     }
     if(affirmationVisible)updateAffirmationRect();
 
-    // Shooting stars during quest normal mode
     if(questActive&&!calmMode&&performance.now()>nextShootingStarTime){
-        shootingStars.push(new ShootingStar());
-        nextShootingStarTime=performance.now()+10000+Math.random()*20000;
+        const burst=Math.random()<0.35?2:1; // 35% chance of 2 at once
+        for(let i=0;i<burst;i++) shootingStars.push(new ShootingStar());
+        nextShootingStarTime=performance.now()+5000+Math.random()*8000;
     }
     shootingStars=shootingStars.filter(s=>!s.dead);
     shootingStars.forEach(s=>s.update());
