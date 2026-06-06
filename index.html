@@ -88,13 +88,13 @@ const hintEl = document.getElementById('hint');
 const brandEl = document.getElementById('brand');
 
 let dpr;
-let stars = [];       // idle laser stars
-let galaxy = [];      // quest: drifting space dust with downward bias
-let calmDots = [];    // calm mode: barely moving stagnant dots
-let shootingStars = []; // occasional shooting star streaks
+let stars = [];
+let galaxy = [];
+let calmDots = [];
+let shootingStars = [];
 
 const STAR_COUNT   = 110;
-const GALAXY_COUNT = 1700; // doubled
+const GALAXY_COUNT = 1700;
 const CALM_COUNT   = 900;
 
 let analyser, dataArray, audioCtx;
@@ -112,8 +112,6 @@ let pointer = { x:-9999, y:-9999, active:false, vx:0, vy:0, prevX:-9999, prevY:-
 let affirmationVisible = false;
 let particleOpacity = 1.0;
 let affirmationRect = null;
-
-// Shooting star timer
 let nextShootingStarTime = 0;
 
 const AFFIRMATIONS = [
@@ -212,13 +210,11 @@ class SpaceDust {
     constructor(scattered){this.color=rc();this.reset();if(scattered){this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;}}
     reset(){
         this.x=Math.random()*canvas.width;
-        this.y=scattered?Math.random()*canvas.height:-Math.random()*50*dpr;
-        // Gentle multi-directional drift + downward bias
+        this.y=-Math.random()*50*dpr;
         const horizSpd=(Math.random()-0.5)*0.3;
-        const vertSpd=Math.random()*0.35+0.1; // always drifting down
-        this.vx=horizSpd;
-        this.vy=vertSpd;
-        this.size=Math.random()*0.55+0.18; // small
+        const vertSpd=Math.random()*0.35+0.1;
+        this.vx=horizSpd; this.vy=vertSpd;
+        this.size=Math.random()*0.55+0.18;
         this.life=Math.random();
         this.alpha=Math.random()*0.5+0.3;
         this.color=rc();
@@ -229,8 +225,6 @@ class SpaceDust {
     update(musicPulse){
         this.twinkle+=this.twinkleSpd;
         if(this.scatter>0){this.scatter-=0.04;if(this.scatter<0)this.scatter=0;}
-
-        // Swipe scatter
         if(pointer.active){
             const dx=this.x-pointer.x,dy=this.y-pointer.y;
             const dist=Math.sqrt(dx*dx+dy*dy);
@@ -248,8 +242,6 @@ class SpaceDust {
                 }
             }
         }
-
-        // Affirmation — very gentle
         if(affirmationVisible&&affirmationRect){
             const dx=this.x-affirmationRect.cx,dy=this.y-affirmationRect.cy;
             if(Math.abs(dx)<affirmationRect.rw&&Math.abs(dy)<affirmationRect.rh){
@@ -257,21 +249,12 @@ class SpaceDust {
                 this.vx+=(dx/dist)*0.12;this.vy+=(dy/dist)*0.08;
             }
         }
-
-        // Music pulse — gentle speed boost
         const beatBoost=1+musicPulse*0.35;
-        this.x+=this.vx*beatBoost;
-        this.y+=this.vy*beatBoost;
-
-        // Dampen horizontal drift but keep vertical fall
+        this.x+=this.vx*beatBoost; this.y+=this.vy*beatBoost;
         this.vx*=0.985;
-        // Restore downward drift if slowed too much
         if(this.vy<0.08) this.vy=0.08+Math.random()*0.1;
-
-        // Wrap left/right
         if(this.x<-5*dpr) this.x=canvas.width+5*dpr;
         if(this.x>canvas.width+5*dpr) this.x=-5*dpr;
-        // Reset from top when falls off bottom
         if(this.y>canvas.height+10*dpr){
             this.x=Math.random()*canvas.width;
             this.y=-Math.random()*30*dpr;
@@ -293,17 +276,15 @@ class SpaceDust {
         ctx.fillStyle=`rgba(${r},${g},${b},${a})`;ctx.fill();
     }
 }
-let scattered = false; // track if reset was scattered
 
-// ── CALM: SLOW UPWARD DRIFT DOTS WITH TOUCH RESPONSE ─────────────────────
+// ── CALM: SLOW UPWARD DRIFT WITH FULL TOUCH RESPONSE ─────────────────────
 class CalmDot {
     constructor(){this.color=rc();this.reset(true);}
     reset(scattered){
         this.x=Math.random()*canvas.width;
         this.y=scattered?Math.random()*canvas.height:canvas.height+Math.random()*50*dpr;
-        // Gentle upward drift — half speed of quest particles
         this.vx=(Math.random()-0.5)*0.18;
-        this.vy=-(Math.random()*0.18+0.06); // negative = upward
+        this.vy=-(Math.random()*0.18+0.06); // upward
         this.size=Math.random()*0.55+0.18;
         this.alpha=Math.random()*0.45+0.3;
         this.color=rc();
@@ -312,35 +293,28 @@ class CalmDot {
     }
     update(){
         this.twinkle+=this.twinkleSpd;
-
-        // Touch/cursor repulsion — same as quest particles
         if(pointer.active){
             const dx=this.x-pointer.x,dy=this.y-pointer.y;
             const dist=Math.sqrt(dx*dx+dy*dy);
             const swipeSpd=Math.sqrt(pointer.vx*pointer.vx+pointer.vy*pointer.vy);
-            const rep=100*dpr;
+            const rep=110*dpr;
             if(dist<rep&&dist>0){
                 const f=(rep-dist)/rep;
                 if(swipeSpd>2){
                     this.vx+=(dx/dist)*f*swipeSpd*0.12;
                     this.vy+=(dy/dist)*f*swipeSpd*0.12;
                 } else {
-                    this.vx+=(dx/dist)*f*0.28;
-                    this.vy+=(dy/dist)*f*0.28;
+                    this.vx+=(dx/dist)*f*0.3;
+                    this.vy+=(dy/dist)*f*0.3;
                 }
             }
         }
-
         this.x+=this.vx; this.y+=this.vy;
-
-        // Dampen horizontal but preserve gentle upward pull
         this.vx*=0.988;
         this.vy*=0.992;
-        if(this.vy>-0.04) this.vy=-0.04-Math.random()*0.05; // always drifting up
-
-        // Wrap sides
-        if(this.x<0)this.x=canvas.width; if(this.x>canvas.width)this.x=0;
-        // Reset from bottom when floats off top
+        if(this.vy>-0.04) this.vy=-0.04-Math.random()*0.04; // always upward
+        if(this.x<0) this.x=canvas.width;
+        if(this.x>canvas.width) this.x=0;
         if(this.y<-10*dpr){
             this.x=Math.random()*canvas.width;
             this.y=canvas.height+Math.random()*20*dpr;
@@ -435,10 +409,10 @@ playBtn.addEventListener('click',async()=>{
         audioMode='track';questActive=true;
         sessionStartTime=performance.now();sessionComplete=false;
         affirmIndex=0;affirmTimer=0;
-        // Build both quest particle sets
         galaxy=[];for(let i=0;i<GALAXY_COUNT;i++)galaxy.push(new SpaceDust(true));
         calmDots=[];for(let i=0;i<CALM_COUNT;i++)calmDots.push(new CalmDot());
-        nextShootingStarTime=performance.now()+8000+Math.random()*12000;
+        // First shooting star comes in 4-8 seconds
+        nextShootingStarTime=performance.now()+4000+Math.random()*4000;
         playBtn.textContent='■ End Quest';playBtn.classList.add('active');
         hintEl.style.opacity='0';
         showingGoText=true;goTextStartTime=performance.now();
@@ -456,7 +430,7 @@ function resize(){
     calmDots=[];for(let i=0;i<CALM_COUNT;i++)calmDots.push(new CalmDot());
 }
 
-// ── AFFIRMATION — subtle whisper ──────────────────────────────────────────
+// ── AFFIRMATION ───────────────────────────────────────────────────────────
 function showAffirmation(){
     if(sessionComplete)return;
     const text=AFFIRMATIONS[affirmIndex%AFFIRMATIONS.length];
@@ -538,10 +512,11 @@ function animate(){
     }
     if(affirmationVisible)updateAffirmationRect();
 
+    // Shooting stars — frequent, 40% chance of double burst
     if(questActive&&!calmMode&&performance.now()>nextShootingStarTime){
-        const burst=Math.random()<0.35?2:1; // 35% chance of 2 at once
+        const burst=Math.random()<0.4?2:1;
         for(let i=0;i<burst;i++) shootingStars.push(new ShootingStar());
-        nextShootingStarTime=performance.now()+5000+Math.random()*8000;
+        nextShootingStarTime=performance.now()+4000+Math.random()*7000;
     }
     shootingStars=shootingStars.filter(s=>!s.dead);
     shootingStars.forEach(s=>s.update());
@@ -550,20 +525,16 @@ function animate(){
     const pulse=audioMode==='idle'?(Math.sin(idleTime)*0.5+0.5):0;
     const musicPulse=Math.min(1,smoothIntensity/80);
 
-    // Clear — quest normal needs faster clear for moving particles
     ctx.fillStyle=questActive&&!calmMode?'rgba(0,0,0,0.35)':questActive&&calmMode?'rgba(0,0,0,0.22)':'rgba(0,0,0,0.20)';
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
     ctx.globalCompositeOperation='lighter';
 
     if(!questActive){
-        // IDLE: laser stars
         stars.forEach(p=>{p.update();p.draw(pulse);});
     } else if(calmMode){
-        // CALM: stagnant dots
         calmDots.forEach(p=>{p.update();p.draw(musicPulse);});
     } else {
-        // QUEST NORMAL: falling space dust + occasional shooting stars
         galaxy.forEach(p=>{p.update(musicPulse);p.draw(musicPulse);});
         shootingStars.forEach(s=>s.draw());
     }
