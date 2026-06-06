@@ -27,7 +27,6 @@
             font-family: 'Courier New', monospace;
             touch-action: none;
         }
-
         canvas {
             display: block;
             position: absolute;
@@ -35,11 +34,9 @@
             width: 100%; height: 100%;
             z-index: 1;
         }
-
         #brand {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -55%);
             text-align: center;
             font-family: 'Arial Rounded MT Bold', 'Nunito', 'Arial Black', sans-serif;
@@ -59,7 +56,6 @@
                 0 0 24px rgba(0, 200, 200, 0.4);
         }
         #brand.hidden { opacity: 0; }
-
         #timer {
             position: absolute; top: 36px; width: 100%;
             text-align: center;
@@ -69,22 +65,30 @@
             pointer-events: none;
             z-index: 15;
         }
-
         #affirmation {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
             color: rgba(129, 216, 208, 0);
-            font-size: 15px; letter-spacing: 4px;
+            font-size: 17px;
+            letter-spacing: 4px;
             pointer-events: none; z-index: 20;
-            width: 85%; line-height: 2.2;
+            width: 80%;
+            line-height: 2.4;
             transition: color 2s, opacity 2s;
             text-transform: uppercase;
+            font-weight: 600;
             text-shadow:
-                0 0 12px rgba(129, 216, 208, 1),
-                0 0 26px rgba(129, 216, 208, 0.6);
+                0 0 8px rgba(129, 216, 208, 1),
+                0 0 20px rgba(129, 216, 208, 0.9),
+                0 0 40px rgba(129, 216, 208, 0.5),
+                0 0 60px rgba(0, 230, 255, 0.3);
+            padding: 18px 24px;
+            border-radius: 8px;
         }
-
+        #affirmation.visible {
+            background: rgba(0, 0, 0, 0.45);
+        }
         #controls {
             position: absolute; bottom: 65px; left: 50%;
             transform: translateX(-50%);
@@ -106,8 +110,7 @@
             min-width: 260px;
         }
         .btn:hover {
-            border-color: #fff;
-            color: #fff;
+            border-color: #fff; color: #fff;
             box-shadow: 0 0 24px rgba(129, 216, 208, 0.5);
         }
         .btn.active {
@@ -116,7 +119,6 @@
             text-shadow: 0 0 10px rgba(57, 255, 20, 0.8);
             box-shadow: 0 0 22px rgba(57, 255, 20, 0.35);
         }
-
         #hint {
             position: absolute; bottom: 20px; width: 100%;
             text-align: center; color: rgba(129, 216, 208, 0.22);
@@ -125,7 +127,6 @@
             text-transform: uppercase;
             transition: opacity 2s;
         }
-
         #complete {
             position: absolute; inset: 0;
             display: flex; flex-direction: column;
@@ -154,7 +155,6 @@
             text-shadow: 0 0 10px rgba(129, 216, 208, 0.5);
         }
         #replay-btn:hover { border-color: #fff; color: #fff; }
-
         #small-doses {
             position: absolute; bottom: 6px; right: 16px;
             color: rgba(129, 216, 208, 0.1);
@@ -168,7 +168,7 @@
 
 <canvas id="c"></canvas>
 <div id="brand">SELF<br>QUEST</div>
-<div id="timer">04:15</div>
+<div id="timer">––:––</div>
 <div id="affirmation"></div>
 
 <div id="controls">
@@ -190,40 +190,44 @@
 <script>
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
-const playBtn = document.getElementById('play-btn');
-const calmBtn = document.getElementById('calm-btn');
-const timerEl = document.getElementById('timer');
+const playBtn  = document.getElementById('play-btn');
+const calmBtn  = document.getElementById('calm-btn');
+const timerEl  = document.getElementById('timer');
 const affirmationEl = document.getElementById('affirmation');
-const completeEl = document.getElementById('complete');
-const hintEl = document.getElementById('hint');
-const brandEl = document.getElementById('brand');
+const completeEl    = document.getElementById('complete');
+const hintEl   = document.getElementById('hint');
+const brandEl  = document.getElementById('brand');
 
 let dpr;
-let particles = [];
-const N = 220; // Fewer stars — spaced out and elegant
+let stars     = [];   // idle laser stars
+let asteroids = [];   // quest asteroids
+let explosionParticles = []; // ASMR touch bursts
+
+const STAR_COUNT     = 120;  // fewer, more spaced
+const ASTEROID_COUNT = 18;   // chunky slow drifters
 
 let analyser, dataArray, audioCtx;
-let audioIntensity = 0;
+let audioIntensity  = 0;
 let smoothIntensity = 0;
 let idleTime = 0;
-let audioMode = 'idle';
+let audioMode = 'idle';   // 'idle' | 'track'
+let questActive = false;  // false = star mode, true = asteroid mode
 let currentAudio = null;
 let sessionStartTime = null;
-let sessionComplete = false;
-const SESSION_DURATION = 255;
+let sessionDuration  = 255; // will be set from actual song duration
+let sessionComplete  = false;
 
-let showingGoText = false;
+let showingGoText  = false;
 let goTextStartTime = 0;
 const GO_TEXT_DURATION = 2000;
 
 let calmMode = false;
 let pointer = { x: -9999, y: -9999, active: false };
 
-// Affirmation repulsion + fade
+// Affirmation state
 let affirmationVisible = false;
-let affirmationFading = false; // true when particles are fading out for affirmation
-let particleOpacity = 1.0;     // global fade multiplier for stars
-let affirmationRect = null;
+let particleOpacity    = 1.0;
+let affirmationRect    = null;
 
 const AFFIRMATIONS = [
     "you are exactly where you need to be",
@@ -243,7 +247,6 @@ const AFFIRMATIONS = [
 let affirmIndex = 0, affirmTimer = 0;
 const AFFIRM_INTERVAL = 30;
 
-// 6 songs
 const SONG_PLAYLIST = [
     '808beat-4GSynthG1.mp3',
     '809beat-nightrider.mp3',
@@ -252,22 +255,19 @@ const SONG_PLAYLIST = [
     '812beat-kingofdaho.mp3',
     '813beat-21jazzstreet.mp3'
 ];
-
 function getRandomSong() {
     return SONG_PLAYLIST[Math.floor(Math.random() * SONG_PLAYLIST.length)];
 }
 
-// NORMAL — bright solid Tiffany blue / cyan only (no white)
+// Bright Tiffany / cyan — no white
 const COLORS_NORMAL = [
-    [0,   242, 255],  // bright cyan
-    [0,   230, 255],  // ice blue
-    [80,  250, 240],  // Tiffany
-    [0,   255, 230],  // neon teal
-    [0,   210, 250],  // sky cyan
-    [100, 255, 245],  // pale Tiffany
+    [0,   242, 255],
+    [0,   230, 255],
+    [80,  250, 240],
+    [0,   255, 230],
+    [0,   210, 250],
+    [100, 255, 245],
 ];
-
-// CALM — Matrix neon green
 const COLORS_CALM = [
     [0,   255, 65],
     [57,  255, 20],
@@ -276,16 +276,26 @@ const COLORS_CALM = [
     [180, 255, 160],
     [0,   255, 130],
 ];
-
 const rc = () => {
     const p = calmMode ? COLORS_CALM : COLORS_NORMAL;
     return p[Math.floor(Math.random() * p.length)];
 };
 
+// ── INPUT ──────────────────────────────────────────────────────────────────
 window.addEventListener('mousemove', e => {
-    pointer.x = e.clientX * dpr; pointer.y = e.clientY * dpr; pointer.active = true;
+    pointer.x = e.clientX * dpr;
+    pointer.y = e.clientY * dpr;
+    pointer.active = true;
 });
 window.addEventListener('mouseout', () => pointer.active = false);
+
+window.addEventListener('mousedown', e => {
+    spawnExplosion(e.clientX * dpr, e.clientY * dpr);
+});
+window.addEventListener('touchstart', e => {
+    for (let t of e.touches) spawnExplosion(t.clientX * dpr, t.clientY * dpr);
+}, { passive: true });
+
 window.addEventListener('touchmove', e => {
     e.preventDefault();
     pointer.x = e.touches[0].clientX * dpr;
@@ -294,17 +304,229 @@ window.addEventListener('touchmove', e => {
 }, { passive: false });
 window.addEventListener('touchend', () => pointer.active = false);
 
+// ── ASMR EXPLOSION ─────────────────────────────────────────────────────────
+function spawnExplosion(x, y) {
+    const count = 28 + Math.floor(Math.random() * 18);
+    for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4;
+        const speed = Math.random() * 4.5 + 1.5;
+        const [r, g, b] = rc();
+        explosionParticles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 1.0,
+            decay: Math.random() * 0.022 + 0.014,
+            size: Math.random() * 3.5 + 1.0,
+            tail: Math.random() * 12 + 6,
+            r, g, b,
+        });
+    }
+}
+
+function updateExplosions() {
+    explosionParticles = explosionParticles.filter(p => p.life > 0);
+    for (let p of explosionParticles) {
+        p.x  += p.vx;
+        p.y  += p.vy;
+        p.vx *= 0.93;
+        p.vy *= 0.93;
+        p.life -= p.decay;
+    }
+}
+
+function drawExplosions() {
+    for (let p of explosionParticles) {
+        const a = Math.max(0, p.life);
+        // Glowing head
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * dpr, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${a})`;
+        ctx.fill();
+        // Trail
+        const grad = ctx.createLinearGradient(p.x, p.y, p.x - p.vx * p.tail, p.y - p.vy * p.tail);
+        grad.addColorStop(0, `rgba(${p.r},${p.g},${p.b},${a * 0.6})`);
+        grad.addColorStop(1, `rgba(${p.r},${p.g},${p.b},0)`);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x - p.vx * p.tail, p.y - p.vy * p.tail);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = (p.size * 0.5) * dpr;
+        ctx.stroke();
+    }
+}
+
+// ── IDLE: LASER STARS ─────────────────────────────────────────────────────
+class Star {
+    constructor(scattered) {
+        this.color = rc(); this.reset();
+        if (scattered) this.y = Math.random() * canvas.height;
+    }
+    reset() {
+        this.x  = Math.random() * canvas.width;
+        this.y  = -Math.random() * canvas.height * 0.3;
+        // Very slow — ASMR drift
+        const spd = Math.random() * 0.18 + 0.07;
+        const ang = (Math.random() - 0.5) * 0.3;
+        this.vx  = Math.sin(ang) * spd;
+        this.vy  = Math.cos(ang) * spd + spd * 0.4;
+        this.tail   = Math.random() * 22 + 10;
+        this.glow   = Math.random() * 1.0 + 0.4;
+        this.life   = Math.random();
+        this.color  = rc();
+        this.twinkle = Math.random() * Math.PI * 2;
+    }
+    update() {
+        this.twinkle += 0.03;
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.y > canvas.height + this.tail) { this.reset(); return; }
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -0.6;
+        // Pointer repulsion
+        if (pointer.active) {
+            const dx = this.x - pointer.x, dy = this.y - pointer.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            const r = 160 * dpr;
+            if (dist < r && dist > 0) {
+                const f = (r - dist) / r;
+                this.vx += (dx/dist)*f*2.0;
+                this.vy += (dy/dist)*f*2.0;
+            }
+        }
+        this.vx *= 0.97;
+        if (this.vy < 0.07) this.vy = 0.07;
+    }
+    draw(pulse) {
+        const [r, g, b] = this.color;
+        const tw = 0.85 + Math.sin(this.twinkle) * 0.15;
+        const a  = Math.min(1, (0.55 + this.life * 0.35 + pulse * 0.2) * tw * particleOpacity);
+        const headR = (this.glow + pulse * 0.3) * dpr;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, headR, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.fill();
+        const tailLen = (this.tail + pulse * 6) * dpr;
+        const grad = ctx.createLinearGradient(this.x, this.y, this.x - this.vx*tailLen*7, this.y - this.vy*tailLen*7);
+        grad.addColorStop(0, `rgba(${r},${g},${b},${a * 0.65})`);
+        grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x - this.vx*tailLen*7, this.y - this.vy*tailLen*7);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 0.9 * dpr;
+        ctx.stroke();
+    }
+}
+
+// ── QUEST: ASTEROIDS ──────────────────────────────────────────────────────
+class Asteroid {
+    constructor() { this.reset(true); }
+    reset(scattered) {
+        this.x = Math.random() * canvas.width;
+        this.y = scattered ? Math.random() * canvas.height : -80 * dpr;
+        // Slow random drift in any direction
+        const spd = Math.random() * 0.5 + 0.15;
+        const ang = Math.random() * Math.PI * 2;
+        this.vx = Math.cos(ang) * spd;
+        this.vy = Math.sin(ang) * spd + 0.1;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotSpeed = (Math.random() - 0.5) * 0.008;
+        this.sides    = Math.floor(Math.random() * 4) + 5; // 5–8 sides
+        // Chunky irregular radius
+        this.radii = Array.from({length: this.sides}, () => (Math.random() * 0.4 + 0.7) * (Math.random() * 22 + 14) * dpr);
+        this.color = rc();
+        this.life   = Math.random();
+        this.baseAlpha = Math.random() * 0.3 + 0.45;
+    }
+    update(musicPulse) {
+        this.rotation += this.rotSpeed;
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Bounce off walls gently
+        if (this.x < -100*dpr || this.x > canvas.width + 100*dpr) this.vx *= -1;
+        if (this.y > canvas.height + 100*dpr) this.reset(false);
+
+        // Music pulse makes them wobble
+        if (musicPulse > 0.4) {
+            this.vx += (Math.random()-0.5) * musicPulse * 0.8;
+            this.vy += (Math.random()-0.5) * musicPulse * 0.5;
+        }
+        // Speed dampen so they don't accelerate forever
+        this.vx *= 0.995;
+        this.vy *= 0.995;
+
+        // Pointer repulsion
+        if (pointer.active) {
+            const dx = this.x - pointer.x, dy = this.y - pointer.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            const rep = 220 * dpr;
+            if (dist < rep && dist > 0) {
+                const f = (rep - dist) / rep;
+                this.vx += (dx/dist)*f*3.5;
+                this.vy += (dy/dist)*f*3.5;
+            }
+        }
+
+        // Affirmation repulsion
+        if (affirmationVisible && affirmationRect) {
+            const dx = this.x - affirmationRect.cx;
+            const dy = this.y - affirmationRect.cy;
+            if (Math.abs(dx) < affirmationRect.rw && Math.abs(dy) < affirmationRect.rh) {
+                const dist = Math.sqrt(dx*dx+dy*dy)||1;
+                const f = 1.5;
+                this.vx += (dx/dist)*f;
+                this.vy += (dy/dist)*f;
+            }
+        }
+    }
+    draw(musicPulse) {
+        const [r,g,b] = this.color;
+        const pulse = musicPulse * 0.5;
+        const a = Math.min(1, (this.baseAlpha + pulse * 0.4) * particleOpacity);
+        const scalePulse = 1 + pulse * 0.3;
+
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+
+        // Glow
+        ctx.shadowColor = `rgba(${r},${g},${b},0.8)`;
+        ctx.shadowBlur  = (12 + pulse * 20) * dpr;
+
+        ctx.beginPath();
+        for (let i = 0; i < this.sides; i++) {
+            const ang = (Math.PI * 2 * i) / this.sides;
+            const rad = this.radii[i] * scalePulse;
+            const px  = Math.cos(ang) * rad;
+            const py  = Math.sin(ang) * rad;
+            i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.lineWidth   = (1.8 + pulse * 1.5) * dpr;
+        ctx.stroke();
+        ctx.fillStyle   = `rgba(${r},${g},${b},${a * 0.08})`;
+        ctx.fill();
+
+        ctx.restore();
+    }
+}
+
+// ── CONTROLS ───────────────────────────────────────────────────────────────
 function enableCalmMode() {
     calmMode = true;
     calmBtn.textContent = '☀️ Normal Mode';
     calmBtn.classList.add('active');
-    particles.forEach(p => p.color = rc());
+    stars.forEach(p => p.color = rc());
+    asteroids.forEach(p => p.color = rc());
 }
 function disableCalmMode() {
     calmMode = false;
     calmBtn.textContent = '🌙 Calm Mode';
     calmBtn.classList.remove('active');
-    particles.forEach(p => p.color = rc());
+    stars.forEach(p => p.color = rc());
+    asteroids.forEach(p => p.color = rc());
 }
 calmBtn.addEventListener('click', () => calmMode ? disableCalmMode() : enableCalmMode());
 
@@ -312,215 +534,111 @@ playBtn.addEventListener('click', async () => {
     if (audioMode === 'track') {
         if (currentAudio) currentAudio.pause();
         audioMode = 'idle';
+        questActive = false;
         playBtn.textContent = '▶ Begin Quest';
         playBtn.classList.remove('active');
         sessionStartTime = null;
-        timerEl.textContent = '04:15';
+        timerEl.textContent = '––:––';
         hintEl.style.opacity = '1';
         brandEl.classList.remove('hidden');
         showingGoText = false;
         particleOpacity = 1.0;
+        affirmationEl.classList.remove('visible');
         return;
     }
     try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') await audioCtx.resume();
         analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 512; // larger fftSize = more frequency detail = better reactivity
+        analyser.fftSize = 512;
         dataArray = new Uint8Array(analyser.frequencyBinCount);
+
         const randomSong = getRandomSong();
         currentAudio = new Audio(randomSong);
         currentAudio.crossOrigin = 'anonymous';
         currentAudio.loop = false;
+
+        // Sync timer to actual song duration
+        currentAudio.addEventListener('loadedmetadata', () => {
+            sessionDuration = currentAudio.duration || 255;
+            const m = Math.floor(sessionDuration / 60);
+            const s = Math.floor(sessionDuration % 60);
+            timerEl.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        });
+
         const source = audioCtx.createMediaElementSource(currentAudio);
         source.connect(analyser);
         analyser.connect(audioCtx.destination);
         await currentAudio.play();
+
         audioMode = 'track';
+        questActive = true;
         sessionStartTime = performance.now();
-        sessionComplete = false;
+        sessionComplete  = false;
         affirmIndex = 0; affirmTimer = 0;
         playBtn.textContent = '■ End Quest';
         playBtn.classList.add('active');
         hintEl.style.opacity = '0';
 
-        showingGoText = true;
+        showingGoText   = true;
         goTextStartTime = performance.now();
         setTimeout(() => brandEl.classList.add('hidden'), 1800);
         setTimeout(() => showAffirmation(), 3500);
+
+        // Handle song ending before timer
+        currentAudio.addEventListener('ended', () => {
+            if (!sessionComplete) triggerSessionComplete();
+        });
     } catch(e) {
         playBtn.textContent = 'Audio Error';
         console.error(e);
     }
 });
 
+// ── RESIZE ─────────────────────────────────────────────────────────────────
 function resize() {
     dpr = window.devicePixelRatio || 1;
-    canvas.width = window.innerWidth * dpr;
+    canvas.width  = window.innerWidth  * dpr;
     canvas.height = window.innerHeight * dpr;
-    particles = [];
-    for (let i = 0; i < N; i++) particles.push(new Star(true));
+    stars     = [];
+    asteroids = [];
+    for (let i = 0; i < STAR_COUNT;     i++) stars.push(new Star(true));
+    for (let i = 0; i < ASTEROID_COUNT; i++) asteroids.push(new Asteroid());
 }
 
-// ── STAR class — elegant slow falling streaks ──────────────────────────────
-class Star {
-    constructor(scattered) {
-        this.color = rc();
-        this.reset();
-        if (scattered) this.y = Math.random() * canvas.height;
-    }
-
-    reset() {
-        this.x  = Math.random() * canvas.width;
-        this.y  = -Math.random() * canvas.height * 0.3;
-
-        // Very slow drift — elegant, not rain
-        const speed = calmMode
-            ? Math.random() * 0.18 + 0.08   // calm: ultra slow
-            : Math.random() * 0.28 + 0.12;  // normal: still gentle
-
-        // Slight angle — stars drift a little sideways
-        const angle = (Math.random() - 0.5) * 0.35; // subtle diagonal
-        this.vx = Math.sin(angle) * speed;
-        this.vy = Math.cos(angle) * speed + speed * 0.5;
-
-        // Tail length — varies per star for organic feel
-        this.tail = Math.random() * (calmMode ? 18 : 28) + 8;
-
-        // Glow size
-        this.glow = Math.random() * 1.2 + 0.4;
-
-        this.life  = Math.random();
-        this.color = rc();
-        this.twinkle = Math.random() * Math.PI * 2; // offset for twinkle
-    }
-
-    update(boost, musicPulse) {
-        this.twinkle += 0.04;
-
-        // Music reactivity — stars speed up and grow on beats
-        const beatBoost = 1 + musicPulse * 2.5;
-
-        this.x += this.vx * beatBoost;
-        this.y += (this.vy + boost) * beatBoost;
-
-        if (this.y > canvas.height + this.tail) {
-            this.reset();
-            return;
-        }
-        if (this.x < 0 || this.x > canvas.width) {
-            this.vx *= -0.6;
-        }
-
-        // Affirmation repulsion — stars gently float away from text
-        if (affirmationVisible && affirmationRect) {
-            const dx = this.x - affirmationRect.cx;
-            const dy = this.y - affirmationRect.cy;
-            if (Math.abs(dx) < affirmationRect.rw && Math.abs(dy) < affirmationRect.rh) {
-                const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-                const strength = Math.min(affirmationRect.rw, affirmationRect.rh);
-                const force = (1 - Math.min(1, dist/strength)) * 1.2;
-                this.vx += (dx/dist) * force * 0.3;
-                this.vy += (dy/dist) * force * 0.3;
-            }
-        }
-
-        // Pointer repulsion
-        if (pointer.active) {
-            const dx = this.x - pointer.x, dy = this.y - pointer.y;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            const r = 180 * dpr;
-            if (dist < r && dist > 0) {
-                const f = (r - dist) / r;
-                this.vx += (dx/dist) * f * (calmMode ? 1.0 : 2.2);
-                this.vy += (dy/dist) * f * (calmMode ? 1.0 : 2.2);
-            }
-        }
-
-        // Dampen vx so stars don't fly sideways forever
-        this.vx *= 0.97;
-
-        // Minimum fall speed
-        const minFall = calmMode ? 0.08 : 0.12;
-        if (this.vy < minFall) this.vy = minFall;
-    }
-
-    draw(intensity, pulse) {
-        const [r, g, b] = this.color;
-
-        // Twinkle brightness
-        const twinkleFactor = 0.85 + Math.sin(this.twinkle) * 0.15;
-
-        // Alpha — stronger base, brightens clearly with music
-        const musicGlow = intensity * 0.012; // noticeable music response
-        const a = Math.min(1, (0.55 + this.life * 0.35 + musicGlow + pulse * 0.25) * twinkleFactor * particleOpacity);
-
-        // Star head — glowing dot
-        const headR = (this.glow + intensity * 0.025 + pulse * 0.4) * dpr;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, headR, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
-        ctx.fill();
-
-        // Tail — line trailing upward from star head
-        const tailLen = (this.tail + intensity * 0.4 + pulse * 8) * dpr;
-        const grad = ctx.createLinearGradient(
-            this.x, this.y,
-            this.x - this.vx * tailLen * 6,
-            this.y - this.vy * tailLen * 6
-        );
-        grad.addColorStop(0, `rgba(${r},${g},${b},${a * 0.7})`);
-        grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
-
-        ctx.beginPath();
-        ctx.moveTo(this.x, this.y);
-        ctx.lineTo(
-            this.x - this.vx * tailLen * 6,
-            this.y - this.vy * tailLen * 6
-        );
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = (0.8 + pulse * 0.4) * dpr;
-        ctx.stroke();
-    }
-}
-
+// ── AFFIRMATION ────────────────────────────────────────────────────────────
 function showAffirmation() {
     if (sessionComplete) return;
     const text = AFFIRMATIONS[affirmIndex % AFFIRMATIONS.length];
-
     const waitForBeat = () => {
         if (audioIntensity > 10 || audioMode === 'idle') {
-
-            // Fade stars out before showing text
-            affirmationFading = true;
+            // Fade particles out
             const fadeOut = setInterval(() => {
-                particleOpacity -= 0.06;
-                if (particleOpacity <= 0.08) {
-                    particleOpacity = 0.08;
+                particleOpacity -= 0.05;
+                if (particleOpacity <= 0.1) {
+                    particleOpacity = 0.1;
                     clearInterval(fadeOut);
-
-                    // Show affirmation text once stars have faded
+                    // Show text
+                    affirmationEl.textContent = text;
+                    affirmationEl.classList.add('visible');
                     affirmationEl.style.transition = 'color 1.5s, opacity 1.5s';
                     affirmationEl.style.opacity = '1';
                     affirmationEl.style.color = calmMode
                         ? 'rgba(150, 255, 130, 1)'
                         : 'rgba(129, 216, 208, 1)';
-                    affirmationEl.textContent = text;
                     affirmationVisible = true;
                     updateAffirmationRect();
 
-                    // After 6 seconds, fade text out then fade stars back in
                     setTimeout(() => {
                         affirmationEl.style.transition = 'color 2.5s, opacity 2.5s';
                         affirmationEl.style.color = 'rgba(129, 216, 208, 0)';
                         affirmationEl.style.opacity = '0';
-
                         setTimeout(() => {
                             affirmationVisible = false;
-                            affirmationFading = false;
-                            // Fade stars back in
+                            affirmationEl.classList.remove('visible');
+                            // Fade particles back in
                             const fadeIn = setInterval(() => {
-                                particleOpacity += 0.04;
+                                particleOpacity += 0.03;
                                 if (particleOpacity >= 1.0) {
                                     particleOpacity = 1.0;
                                     clearInterval(fadeIn);
@@ -530,7 +648,6 @@ function showAffirmation() {
                     }, 6000);
                 }
             }, 30);
-
         } else {
             setTimeout(waitForBeat, 100);
         }
@@ -542,39 +659,38 @@ function showAffirmation() {
 function updateAffirmationRect() {
     const rect = affirmationEl.getBoundingClientRect();
     affirmationRect = {
-        cx: (rect.left + rect.width / 2) * dpr,
-        cy: (rect.top + rect.height / 2) * dpr,
-        rw: (rect.width / 2 + 40) * dpr,
-        rh: (rect.height / 2 + 30) * dpr,
+        cx: (rect.left + rect.width  / 2) * dpr,
+        cy: (rect.top  + rect.height / 2) * dpr,
+        rw: (rect.width  / 2 + 50) * dpr,
+        rh: (rect.height / 2 + 40) * dpr,
     };
 }
 
+// ── SESSION COMPLETE ───────────────────────────────────────────────────────
 function replayQuest() {
     completeEl.classList.remove('show');
     sessionStartTime = null; sessionComplete = false;
-    timerEl.textContent = '04:15';
+    timerEl.textContent = '––:––';
     playBtn.textContent = '▶ Begin Quest';
     playBtn.classList.remove('active');
-    audioMode = 'idle';
+    audioMode   = 'idle';
+    questActive = false;
     hintEl.style.opacity = '1';
-    affirmationEl.style.color = 'rgba(129, 216, 208, 0)';
+    affirmationEl.style.color   = 'rgba(129, 216, 208, 0)';
     affirmationEl.style.opacity = '0';
+    affirmationEl.classList.remove('visible');
     affirmationVisible = false;
-    affirmationFading = false;
-    particleOpacity = 1.0;
-    showingGoText = false;
+    particleOpacity    = 1.0;
+    showingGoText      = false;
     brandEl.classList.remove('hidden');
-    particles.forEach(p => p.reset());
+    stars.forEach(p => p.reset());
+    asteroids.forEach(p => p.reset(true));
 }
 
 function triggerSessionComplete() {
+    if (sessionComplete) return;
     sessionComplete = true;
     completeEl.classList.add('show');
-    particles.forEach(p => {
-        p.vx = (Math.random() - 0.5) * (calmMode ? 3 : 6);
-        p.vy = (Math.random() - 0.5) * (calmMode ? 3 : 6);
-        p.color = calmMode ? [0, 255, 65] : [0, 242, 255];
-    });
     if (currentAudio) {
         setTimeout(() => {
             let vol = 1;
@@ -587,6 +703,7 @@ function triggerSessionComplete() {
     }
 }
 
+// ── GO TEXT ────────────────────────────────────────────────────────────────
 function drawGoText() {
     const elapsed = performance.now() - goTextStartTime;
     if (elapsed < GO_TEXT_DURATION) {
@@ -594,72 +711,78 @@ function drawGoText() {
         const sz = Math.min(canvas.width, canvas.height) * 0.18;
         ctx.save();
         let alpha;
-        if (progress < 0.2) alpha = progress / 0.2;
+        if (progress < 0.2)       alpha = progress / 0.2;
         else if (progress < 0.65) alpha = 1;
-        else alpha = 1 - (progress - 0.65) / 0.35;
-        ctx.globalAlpha = Math.max(0, alpha);
-        ctx.font = `900 ${sz}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.shadowColor = 'rgba(57, 255, 20, 1)';
-        ctx.shadowBlur = 40 * dpr;
-        ctx.strokeStyle = 'rgba(57, 255, 20, 1)';
-        ctx.lineWidth = 3 * dpr;
-        ctx.strokeText('Go!', canvas.width / 2, canvas.height / 2);
-        ctx.shadowBlur = 12 * dpr;
-        ctx.fillStyle = 'rgba(100, 255, 60, 0.95)';
-        ctx.fillText('Go!', canvas.width / 2, canvas.height / 2);
+        else                      alpha = 1 - (progress - 0.65) / 0.35;
+        ctx.globalAlpha    = Math.max(0, alpha);
+        ctx.font           = `900 ${sz}px sans-serif`;
+        ctx.textAlign      = 'center';
+        ctx.textBaseline   = 'middle';
+        ctx.shadowColor    = 'rgba(57, 255, 20, 1)';
+        ctx.shadowBlur     = 40 * dpr;
+        ctx.strokeStyle    = 'rgba(57, 255, 20, 1)';
+        ctx.lineWidth      = 3 * dpr;
+        ctx.strokeText('Go!', canvas.width/2, canvas.height/2);
+        ctx.shadowBlur     = 12 * dpr;
+        ctx.fillStyle      = 'rgba(100, 255, 60, 0.95)';
+        ctx.fillText('Go!', canvas.width/2, canvas.height/2);
         ctx.restore();
     } else {
         showingGoText = false;
     }
 }
 
+// ── ANIMATION LOOP ─────────────────────────────────────────────────────────
 function animate() {
     requestAnimationFrame(animate);
 
     if (audioMode !== 'idle' && analyser) {
         analyser.getByteFrequencyData(dataArray);
-
-        // Use bass + mid frequencies for a fuller music response
-        let bassSum = 0, midSum = 0;
-        for (let i = 0; i < 10; i++) bassSum += dataArray[i];       // bass
-        for (let i = 10; i < 40; i++) midSum += dataArray[i];       // mids
-        audioIntensity = (bassSum / 10) * 0.7 + (midSum / 30) * 0.3;
+        let bass = 0, mid = 0;
+        for (let i = 0;  i < 10; i++) bass += dataArray[i];
+        for (let i = 10; i < 40; i++) mid  += dataArray[i];
+        audioIntensity = (bass/10)*0.7 + (mid/30)*0.3;
     } else {
         audioIntensity *= 0.92;
     }
-
     smoothIntensity += (audioIntensity - smoothIntensity) * 0.15;
 
+    // Timer
     if (sessionStartTime && !sessionComplete) {
-        const elapsed = (performance.now() - sessionStartTime) / 1000;
-        const remaining = Math.max(0, SESSION_DURATION - elapsed);
+        const elapsed   = (performance.now() - sessionStartTime) / 1000;
+        const remaining = Math.max(0, sessionDuration - elapsed);
         const m = Math.floor(remaining / 60);
         const s = Math.floor(remaining % 60);
         timerEl.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        affirmTimer += 1 / 60;
+        affirmTimer += 1/60;
         if (affirmTimer >= AFFIRM_INTERVAL) { affirmTimer = 0; showAffirmation(); }
-        if (elapsed >= SESSION_DURATION) triggerSessionComplete();
+        if (elapsed >= sessionDuration) triggerSessionComplete();
     }
 
     if (affirmationVisible) updateAffirmationRect();
 
     idleTime += calmMode ? 0.006 : 0.014;
-    const pulse = audioMode === 'idle' ? (Math.sin(idleTime) * 0.5 + 0.5) : 0;
-
-    // Music pulse — normalized 0–1 for star reactivity
+    const pulse      = audioMode === 'idle' ? (Math.sin(idleTime)*0.5+0.5) : 0;
     const musicPulse = Math.min(1, smoothIntensity / 80);
 
-    // Gentle fall boost from music
-    const boost = smoothIntensity * (calmMode ? 0.018 : 0.035) + pulse * (calmMode ? 0.06 : 0.1);
-
-    // Slow trail for stars — longer persistence = more elegant streaks
-    ctx.fillStyle = calmMode ? 'rgba(0,0,0,0.22)' : 'rgba(0,0,0,0.20)';
+    // Trail persistence
+    ctx.fillStyle = 'rgba(0,0,0,0.22)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.globalCompositeOperation = 'lighter';
-    particles.forEach(p => { p.update(boost, musicPulse); p.draw(smoothIntensity, pulse); });
+
+    if (!questActive) {
+        // IDLE MODE — laser stars only
+        stars.forEach(p => { p.update(); p.draw(pulse); });
+    } else {
+        // QUEST MODE — asteroids
+        asteroids.forEach(p => { p.update(musicPulse); p.draw(musicPulse); });
+    }
+
+    // Explosions always render on top
+    updateExplosions();
+    drawExplosions();
+
     ctx.globalCompositeOperation = 'source-over';
 
     if (showingGoText) drawGoText();
