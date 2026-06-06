@@ -17,7 +17,6 @@
     <meta name="theme-color" content="#000000">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="icon" href="apple-touch-icon.png">
-
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html {
@@ -86,9 +85,7 @@
             padding: 18px 24px;
             border-radius: 8px;
         }
-        #affirmation.visible {
-            background: rgba(0, 0, 0, 0.45);
-        }
+        #affirmation.visible { background: rgba(0,0,0,0.45); }
         #controls {
             position: absolute; bottom: 65px; left: 50%;
             transform: translateX(-50%);
@@ -97,31 +94,28 @@
             align-items: center; width: 100%;
         }
         .btn {
-            background: rgba(0, 0, 0, 0.5);
-            border: 1.5px solid rgba(255, 255, 255, 0.75);
-            color: rgba(129, 216, 208, 1);
+            background: rgba(0,0,0,0.5);
+            border: 1.5px solid rgba(255,255,255,0.75);
+            color: rgba(129,216,208,1);
             font-family: 'Courier New', monospace;
             font-size: 12px; letter-spacing: 5px;
             padding: 16px 44px; cursor: pointer;
             transition: all 0.3s; text-transform: uppercase;
             backdrop-filter: blur(8px);
-            text-shadow: 0 0 10px rgba(129, 216, 208, 0.8);
-            box-shadow: 0 0 14px rgba(129, 216, 208, 0.15);
+            text-shadow: 0 0 10px rgba(129,216,208,0.8);
+            box-shadow: 0 0 14px rgba(129,216,208,0.15);
             min-width: 260px;
         }
-        .btn:hover {
-            border-color: #fff; color: #fff;
-            box-shadow: 0 0 24px rgba(129, 216, 208, 0.5);
-        }
+        .btn:hover { border-color:#fff; color:#fff; box-shadow: 0 0 24px rgba(129,216,208,0.5); }
         .btn.active {
-            border-color: rgba(57, 255, 20, 0.9);
-            color: rgba(57, 255, 20, 1);
-            text-shadow: 0 0 10px rgba(57, 255, 20, 0.8);
-            box-shadow: 0 0 22px rgba(57, 255, 20, 0.35);
+            border-color: rgba(57,255,20,0.9);
+            color: rgba(57,255,20,1);
+            text-shadow: 0 0 10px rgba(57,255,20,0.8);
+            box-shadow: 0 0 22px rgba(57,255,20,0.35);
         }
         #hint {
             position: absolute; bottom: 20px; width: 100%;
-            text-align: center; color: rgba(129, 216, 208, 0.22);
+            text-align: center; color: rgba(129,216,208,0.22);
             font-size: 9px; letter-spacing: 4px;
             pointer-events: none; z-index: 15;
             text-transform: uppercase;
@@ -135,29 +129,29 @@
             opacity: 0; transition: opacity 3s;
             background: rgba(0,0,0,0.92);
         }
-        #complete.show { opacity: 1; pointer-events: all; }
+        #complete.show { opacity:1; pointer-events:all; }
         #complete-text {
-            color: rgba(129, 216, 208, 0.95);
+            color: rgba(129,216,208,0.95);
             font-size: 14px; letter-spacing: 6px;
             text-transform: uppercase;
             text-align: center;
             line-height: 3.2;
-            text-shadow: 0 0 18px rgba(129, 216, 208, 0.6);
+            text-shadow: 0 0 18px rgba(129,216,208,0.6);
         }
         #replay-btn {
             margin-top: 40px; background: transparent;
             border: 1.5px solid rgba(255,255,255,0.65);
-            color: rgba(129, 216, 208, 1);
+            color: rgba(129,216,208,1);
             font-family: 'Courier New', monospace;
             font-size: 11px; letter-spacing: 5px;
             padding: 14px 32px; cursor: pointer;
             text-transform: uppercase;
-            text-shadow: 0 0 10px rgba(129, 216, 208, 0.5);
+            text-shadow: 0 0 10px rgba(129,216,208,0.5);
         }
-        #replay-btn:hover { border-color: #fff; color: #fff; }
+        #replay-btn:hover { border-color:#fff; color:#fff; }
         #small-doses {
             position: absolute; bottom: 6px; right: 16px;
-            color: rgba(129, 216, 208, 0.1);
+            color: rgba(129,216,208,0.1);
             font-size: 8px; letter-spacing: 3px;
             pointer-events: none; z-index: 15;
             text-transform: uppercase;
@@ -165,19 +159,16 @@
     </style>
 </head>
 <body>
-
 <canvas id="c"></canvas>
 <div id="brand">SELF<br>QUEST</div>
 <div id="timer">––:––</div>
 <div id="affirmation"></div>
-
 <div id="controls">
     <button class="btn" id="play-btn">▶ Begin Quest</button>
     <button class="btn" id="calm-btn">🌙 Calm Mode</button>
 </div>
 <div id="hint">touch · move · breathe</div>
 <div id="small-doses">Small Doses</div>
-
 <div id="complete">
     <div id="complete-text">
         your quest is complete<br>
@@ -189,42 +180,41 @@
 
 <script>
 const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-const playBtn  = document.getElementById('play-btn');
-const calmBtn  = document.getElementById('calm-btn');
-const timerEl  = document.getElementById('timer');
+const ctx    = canvas.getContext('2d');
+const playBtn = document.getElementById('play-btn');
+const calmBtn = document.getElementById('calm-btn');
+const timerEl = document.getElementById('timer');
 const affirmationEl = document.getElementById('affirmation');
 const completeEl    = document.getElementById('complete');
-const hintEl   = document.getElementById('hint');
-const brandEl  = document.getElementById('brand');
+const hintEl  = document.getElementById('hint');
+const brandEl = document.getElementById('brand');
 
 let dpr;
-let stars     = [];   // idle laser stars
-let asteroids = [];   // quest asteroids
-let explosionParticles = []; // ASMR touch bursts
+let stars    = [];
+let bubbles  = [];
+let explosionParticles = [];
 
-const STAR_COUNT     = 120;  // fewer, more spaced
-const ASTEROID_COUNT = 18;   // chunky slow drifters
+const STAR_COUNT   = 120;
+const BUBBLE_COUNT = 38; // enough to fill screen, not cluttered
 
 let analyser, dataArray, audioCtx;
 let audioIntensity  = 0;
 let smoothIntensity = 0;
-let idleTime = 0;
-let audioMode = 'idle';   // 'idle' | 'track'
-let questActive = false;  // false = star mode, true = asteroid mode
-let currentAudio = null;
+let idleTime    = 0;
+let audioMode   = 'idle';
+let questActive = false;
+let currentAudio    = null;
 let sessionStartTime = null;
-let sessionDuration  = 255; // will be set from actual song duration
+let sessionDuration  = 255;
 let sessionComplete  = false;
 
-let showingGoText  = false;
+let showingGoText   = false;
 let goTextStartTime = 0;
 const GO_TEXT_DURATION = 2000;
 
 let calmMode = false;
-let pointer = { x: -9999, y: -9999, active: false };
+let pointer  = { x: -9999, y: -9999, active: false };
 
-// Affirmation state
 let affirmationVisible = false;
 let particleOpacity    = 1.0;
 let affirmationRect    = null;
@@ -259,7 +249,6 @@ function getRandomSong() {
     return SONG_PLAYLIST[Math.floor(Math.random() * SONG_PLAYLIST.length)];
 }
 
-// Bright Tiffany / cyan — no white
 const COLORS_NORMAL = [
     [0,   242, 255],
     [0,   230, 255],
@@ -288,14 +277,10 @@ window.addEventListener('mousemove', e => {
     pointer.active = true;
 });
 window.addEventListener('mouseout', () => pointer.active = false);
-
-window.addEventListener('mousedown', e => {
-    spawnExplosion(e.clientX * dpr, e.clientY * dpr);
-});
+window.addEventListener('mousedown', e => spawnExplosion(e.clientX * dpr, e.clientY * dpr));
 window.addEventListener('touchstart', e => {
     for (let t of e.touches) spawnExplosion(t.clientX * dpr, t.clientY * dpr);
 }, { passive: true });
-
 window.addEventListener('touchmove', e => {
     e.preventDefault();
     pointer.x = e.touches[0].clientX * dpr;
@@ -304,9 +289,9 @@ window.addEventListener('touchmove', e => {
 }, { passive: false });
 window.addEventListener('touchend', () => pointer.active = false);
 
-// ── ASMR EXPLOSION ─────────────────────────────────────────────────────────
+// ── ASMR EXPLOSION ────────────────────────────────────────────────────────
 function spawnExplosion(x, y) {
-    const count = 28 + Math.floor(Math.random() * 18);
+    const count = 30 + Math.floor(Math.random() * 18);
     for (let i = 0; i < count; i++) {
         const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4;
         const speed = Math.random() * 4.5 + 1.5;
@@ -323,27 +308,21 @@ function spawnExplosion(x, y) {
         });
     }
 }
-
 function updateExplosions() {
     explosionParticles = explosionParticles.filter(p => p.life > 0);
     for (let p of explosionParticles) {
-        p.x  += p.vx;
-        p.y  += p.vy;
-        p.vx *= 0.93;
-        p.vy *= 0.93;
+        p.x  += p.vx; p.y  += p.vy;
+        p.vx *= 0.93; p.vy *= 0.93;
         p.life -= p.decay;
     }
 }
-
 function drawExplosions() {
     for (let p of explosionParticles) {
         const a = Math.max(0, p.life);
-        // Glowing head
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size * dpr, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${a})`;
         ctx.fill();
-        // Trail
         const grad = ctx.createLinearGradient(p.x, p.y, p.x - p.vx * p.tail, p.y - p.vy * p.tail);
         grad.addColorStop(0, `rgba(${p.r},${p.g},${p.b},${a * 0.6})`);
         grad.addColorStop(1, `rgba(${p.r},${p.g},${p.b},0)`);
@@ -363,17 +342,16 @@ class Star {
         if (scattered) this.y = Math.random() * canvas.height;
     }
     reset() {
-        this.x  = Math.random() * canvas.width;
-        this.y  = -Math.random() * canvas.height * 0.3;
-        // Very slow — ASMR drift
+        this.x = Math.random() * canvas.width;
+        this.y = -Math.random() * canvas.height * 0.3;
         const spd = Math.random() * 0.18 + 0.07;
         const ang = (Math.random() - 0.5) * 0.3;
-        this.vx  = Math.sin(ang) * spd;
-        this.vy  = Math.cos(ang) * spd + spd * 0.4;
-        this.tail   = Math.random() * 22 + 10;
-        this.glow   = Math.random() * 1.0 + 0.4;
-        this.life   = Math.random();
-        this.color  = rc();
+        this.vx = Math.sin(ang) * spd;
+        this.vy = Math.cos(ang) * spd + spd * 0.4;
+        this.tail    = Math.random() * 22 + 10;
+        this.glow    = Math.random() * 1.0 + 0.4;
+        this.life    = Math.random();
+        this.color   = rc();
         this.twinkle = Math.random() * Math.PI * 2;
     }
     update() {
@@ -382,7 +360,6 @@ class Star {
         this.y += this.vy;
         if (this.y > canvas.height + this.tail) { this.reset(); return; }
         if (this.x < 0 || this.x > canvas.width) this.vx *= -0.6;
-        // Pointer repulsion
         if (pointer.active) {
             const dx = this.x - pointer.x, dy = this.y - pointer.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
@@ -418,55 +395,75 @@ class Star {
     }
 }
 
-// ── QUEST: ASTEROIDS ──────────────────────────────────────────────────────
-class Asteroid {
-    constructor() { this.reset(true); }
-    reset(scattered) {
-        this.x = Math.random() * canvas.width;
-        this.y = scattered ? Math.random() * canvas.height : -80 * dpr;
-        // Slow random drift in any direction
-        const spd = Math.random() * 0.5 + 0.15;
-        const ang = Math.random() * Math.PI * 2;
-        this.vx = Math.cos(ang) * spd;
-        this.vy = Math.sin(ang) * spd + 0.1;
-        this.rotation = Math.random() * Math.PI * 2;
-        this.rotSpeed = (Math.random() - 0.5) * 0.008;
-        this.sides    = Math.floor(Math.random() * 4) + 5; // 5–8 sides
-        // Chunky irregular radius
-        this.radii = Array.from({length: this.sides}, () => (Math.random() * 0.4 + 0.7) * (Math.random() * 22 + 14) * dpr);
-        this.color = rc();
-        this.life   = Math.random();
-        this.baseAlpha = Math.random() * 0.3 + 0.45;
+// ── QUEST: BUBBLES ────────────────────────────────────────────────────────
+class Bubble {
+    constructor(scattered) {
+        this.reset(scattered);
     }
+    reset(scattered) {
+        // Varied sizes — some tiny, some large
+        this.baseRadius = (Math.random() * 28 + 8) * dpr;
+        this.radius     = this.baseRadius;
+
+        this.x = Math.random() * canvas.width;
+        this.y = scattered
+            ? Math.random() * canvas.height
+            : canvas.height + this.baseRadius * 2;
+
+        // Slow upward float with gentle side wobble
+        this.vy = -(Math.random() * 0.45 + 0.18); // always upward, slow
+        this.vx = (Math.random() - 0.5) * 0.3;
+
+        // Wobble phase — makes them drift naturally left/right
+        this.wobblePhase = Math.random() * Math.PI * 2;
+        this.wobbleSpeed = Math.random() * 0.018 + 0.008;
+        this.wobbleAmp   = Math.random() * 0.6 + 0.2;
+
+        this.color    = rc();
+        this.life     = Math.random();
+        this.alpha    = Math.random() * 0.25 + 0.18; // base transparency — soap bubble feel
+        this.shimmer  = Math.random() * Math.PI * 2;
+        this.shimmerSpd = Math.random() * 0.04 + 0.02;
+
+        // Highlight offset — makes it look round/glassy
+        this.hlX = -0.28;
+        this.hlY = -0.28;
+    }
+
     update(musicPulse) {
-        this.rotation += this.rotSpeed;
-        this.x += this.vx;
-        this.y += this.vy;
+        this.wobblePhase += this.wobbleSpeed;
+        this.shimmer     += this.shimmerSpd;
 
-        // Bounce off walls gently
-        if (this.x < -100*dpr || this.x > canvas.width + 100*dpr) this.vx *= -1;
-        if (this.y > canvas.height + 100*dpr) this.reset(false);
+        // Wobble drift
+        this.x  += this.vx + Math.sin(this.wobblePhase) * this.wobbleAmp;
+        this.y  += this.vy;
 
-        // Music pulse makes them wobble
-        if (musicPulse > 0.4) {
-            this.vx += (Math.random()-0.5) * musicPulse * 0.8;
-            this.vy += (Math.random()-0.5) * musicPulse * 0.5;
-        }
-        // Speed dampen so they don't accelerate forever
-        this.vx *= 0.995;
-        this.vy *= 0.995;
+        // Music: bubbles swell and rise faster on beats
+        const beatScale = 1 + musicPulse * 0.35;
+        this.radius = this.baseRadius * beatScale;
 
-        // Pointer repulsion
+        // Wrap horizontally
+        if (this.x < -this.radius * 2)             this.x = canvas.width  + this.radius;
+        if (this.x > canvas.width  + this.radius * 2) this.x = -this.radius;
+
+        // Reset when floated off top
+        if (this.y < -this.radius * 3) this.reset(false);
+
+        // Pointer push — bubbles float away from finger
         if (pointer.active) {
             const dx = this.x - pointer.x, dy = this.y - pointer.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
-            const rep = 220 * dpr;
+            const rep  = 200 * dpr;
             if (dist < rep && dist > 0) {
                 const f = (rep - dist) / rep;
-                this.vx += (dx/dist)*f*3.5;
-                this.vy += (dy/dist)*f*3.5;
+                this.vx += (dx/dist) * f * 2.8;
+                this.vy += (dy/dist) * f * 2.8;
             }
         }
+        // Dampen so they don't fly forever
+        this.vx *= 0.97;
+        // Keep upward momentum
+        if (this.vy > -0.15) this.vy -= 0.01;
 
         // Affirmation repulsion
         if (affirmationVisible && affirmationRect) {
@@ -474,39 +471,62 @@ class Asteroid {
             const dy = this.y - affirmationRect.cy;
             if (Math.abs(dx) < affirmationRect.rw && Math.abs(dy) < affirmationRect.rh) {
                 const dist = Math.sqrt(dx*dx+dy*dy)||1;
-                const f = 1.5;
-                this.vx += (dx/dist)*f;
-                this.vy += (dy/dist)*f;
+                this.vx += (dx/dist) * 1.2;
+                this.vy += (dy/dist) * 1.2;
             }
         }
     }
+
     draw(musicPulse) {
-        const [r,g,b] = this.color;
-        const pulse = musicPulse * 0.5;
-        const a = Math.min(1, (this.baseAlpha + pulse * 0.4) * particleOpacity);
-        const scalePulse = 1 + pulse * 0.3;
+        const [r, g, b] = this.color;
+        const shimmerBright = 0.5 + Math.sin(this.shimmer) * 0.5;
+        const a = Math.min(0.88, (this.alpha + musicPulse * 0.3) * particleOpacity);
+        const rad = this.radius;
 
         ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.rotation);
+        ctx.globalAlpha = a;
 
-        // Glow
-        ctx.shadowColor = `rgba(${r},${g},${b},0.8)`;
-        ctx.shadowBlur  = (12 + pulse * 20) * dpr;
-
+        // Outer glow
+        const glow = ctx.createRadialGradient(this.x, this.y, rad * 0.6, this.x, this.y, rad * 1.4);
+        glow.addColorStop(0, `rgba(${r},${g},${b},0.08)`);
+        glow.addColorStop(1, `rgba(${r},${g},${b},0)`);
         ctx.beginPath();
-        for (let i = 0; i < this.sides; i++) {
-            const ang = (Math.PI * 2 * i) / this.sides;
-            const rad = this.radii[i] * scalePulse;
-            const px  = Math.cos(ang) * rad;
-            const py  = Math.sin(ang) * rad;
-            i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-        }
-        ctx.closePath();
-        ctx.strokeStyle = `rgba(${r},${g},${b},${a})`;
-        ctx.lineWidth   = (1.8 + pulse * 1.5) * dpr;
+        ctx.arc(this.x, this.y, rad * 1.4, 0, Math.PI * 2);
+        ctx.fillStyle = glow;
+        ctx.fill();
+
+        // Bubble rim — thin glowing edge
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, rad, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(${r},${g},${b},${0.55 + musicPulse * 0.35})`;
+        ctx.lineWidth   = (1.5 + musicPulse * 2.0) * dpr;
+        ctx.shadowColor = `rgba(${r},${g},${b},0.9)`;
+        ctx.shadowBlur  = (10 + musicPulse * 18) * dpr;
         ctx.stroke();
-        ctx.fillStyle   = `rgba(${r},${g},${b},${a * 0.08})`;
+
+        // Inner translucent fill — very faint, like a soap bubble
+        const inner = ctx.createRadialGradient(
+            this.x + rad * this.hlX, this.y + rad * this.hlY, rad * 0.05,
+            this.x, this.y, rad
+        );
+        inner.addColorStop(0, `rgba(${r},${g},${b},0.12)`);
+        inner.addColorStop(0.6, `rgba(${r},${g},${b},0.04)`);
+        inner.addColorStop(1,   `rgba(${r},${g},${b},0.01)`);
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, rad, 0, Math.PI * 2);
+        ctx.fillStyle = inner;
+        ctx.fill();
+
+        // Glassy highlight — small bright crescent top-left
+        const hlRad = rad * 0.32;
+        const hlX   = this.x + rad * this.hlX * 0.7;
+        const hlY   = this.y + rad * this.hlY * 0.7;
+        const hl = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlRad);
+        hl.addColorStop(0, `rgba(255,255,255,${0.55 * shimmerBright})`);
+        hl.addColorStop(1, `rgba(255,255,255,0)`);
+        ctx.beginPath();
+        ctx.arc(hlX, hlY, hlRad, 0, Math.PI * 2);
+        ctx.fillStyle = hl;
         ctx.fill();
 
         ctx.restore();
@@ -519,21 +539,21 @@ function enableCalmMode() {
     calmBtn.textContent = '☀️ Normal Mode';
     calmBtn.classList.add('active');
     stars.forEach(p => p.color = rc());
-    asteroids.forEach(p => p.color = rc());
+    bubbles.forEach(p => p.color = rc());
 }
 function disableCalmMode() {
     calmMode = false;
     calmBtn.textContent = '🌙 Calm Mode';
     calmBtn.classList.remove('active');
     stars.forEach(p => p.color = rc());
-    asteroids.forEach(p => p.color = rc());
+    bubbles.forEach(p => p.color = rc());
 }
 calmBtn.addEventListener('click', () => calmMode ? disableCalmMode() : enableCalmMode());
 
 playBtn.addEventListener('click', async () => {
     if (audioMode === 'track') {
         if (currentAudio) currentAudio.pause();
-        audioMode = 'idle';
+        audioMode   = 'idle';
         questActive = false;
         playBtn.textContent = '▶ Begin Quest';
         playBtn.classList.remove('active');
@@ -541,7 +561,7 @@ playBtn.addEventListener('click', async () => {
         timerEl.textContent = '––:––';
         hintEl.style.opacity = '1';
         brandEl.classList.remove('hidden');
-        showingGoText = false;
+        showingGoText   = false;
         particleOpacity = 1.0;
         affirmationEl.classList.remove('visible');
         return;
@@ -571,8 +591,8 @@ playBtn.addEventListener('click', async () => {
         analyser.connect(audioCtx.destination);
         await currentAudio.play();
 
-        audioMode = 'track';
-        questActive = true;
+        audioMode        = 'track';
+        questActive      = true;
         sessionStartTime = performance.now();
         sessionComplete  = false;
         affirmIndex = 0; affirmTimer = 0;
@@ -585,7 +605,6 @@ playBtn.addEventListener('click', async () => {
         setTimeout(() => brandEl.classList.add('hidden'), 1800);
         setTimeout(() => showAffirmation(), 3500);
 
-        // Handle song ending before timer
         currentAudio.addEventListener('ended', () => {
             if (!sessionComplete) triggerSessionComplete();
         });
@@ -600,10 +619,10 @@ function resize() {
     dpr = window.devicePixelRatio || 1;
     canvas.width  = window.innerWidth  * dpr;
     canvas.height = window.innerHeight * dpr;
-    stars     = [];
-    asteroids = [];
-    for (let i = 0; i < STAR_COUNT;     i++) stars.push(new Star(true));
-    for (let i = 0; i < ASTEROID_COUNT; i++) asteroids.push(new Asteroid());
+    stars   = [];
+    bubbles = [];
+    for (let i = 0; i < STAR_COUNT;   i++) stars.push(new Star(true));
+    for (let i = 0; i < BUBBLE_COUNT; i++) bubbles.push(new Bubble(true));
 }
 
 // ── AFFIRMATION ────────────────────────────────────────────────────────────
@@ -612,31 +631,27 @@ function showAffirmation() {
     const text = AFFIRMATIONS[affirmIndex % AFFIRMATIONS.length];
     const waitForBeat = () => {
         if (audioIntensity > 10 || audioMode === 'idle') {
-            // Fade particles out
             const fadeOut = setInterval(() => {
                 particleOpacity -= 0.05;
                 if (particleOpacity <= 0.1) {
                     particleOpacity = 0.1;
                     clearInterval(fadeOut);
-                    // Show text
                     affirmationEl.textContent = text;
                     affirmationEl.classList.add('visible');
                     affirmationEl.style.transition = 'color 1.5s, opacity 1.5s';
                     affirmationEl.style.opacity = '1';
                     affirmationEl.style.color = calmMode
-                        ? 'rgba(150, 255, 130, 1)'
-                        : 'rgba(129, 216, 208, 1)';
+                        ? 'rgba(150,255,130,1)'
+                        : 'rgba(129,216,208,1)';
                     affirmationVisible = true;
                     updateAffirmationRect();
-
                     setTimeout(() => {
                         affirmationEl.style.transition = 'color 2.5s, opacity 2.5s';
-                        affirmationEl.style.color = 'rgba(129, 216, 208, 0)';
+                        affirmationEl.style.color   = 'rgba(129,216,208,0)';
                         affirmationEl.style.opacity = '0';
                         setTimeout(() => {
                             affirmationVisible = false;
                             affirmationEl.classList.remove('visible');
-                            // Fade particles back in
                             const fadeIn = setInterval(() => {
                                 particleOpacity += 0.03;
                                 if (particleOpacity >= 1.0) {
@@ -655,7 +670,6 @@ function showAffirmation() {
     waitForBeat();
     affirmIndex++;
 }
-
 function updateAffirmationRect() {
     const rect = affirmationEl.getBoundingClientRect();
     affirmationRect = {
@@ -666,7 +680,7 @@ function updateAffirmationRect() {
     };
 }
 
-// ── SESSION COMPLETE ───────────────────────────────────────────────────────
+// ── SESSION ────────────────────────────────────────────────────────────────
 function replayQuest() {
     completeEl.classList.remove('show');
     sessionStartTime = null; sessionComplete = false;
@@ -676,7 +690,7 @@ function replayQuest() {
     audioMode   = 'idle';
     questActive = false;
     hintEl.style.opacity = '1';
-    affirmationEl.style.color   = 'rgba(129, 216, 208, 0)';
+    affirmationEl.style.color   = 'rgba(129,216,208,0)';
     affirmationEl.style.opacity = '0';
     affirmationEl.classList.remove('visible');
     affirmationVisible = false;
@@ -684,9 +698,8 @@ function replayQuest() {
     showingGoText      = false;
     brandEl.classList.remove('hidden');
     stars.forEach(p => p.reset());
-    asteroids.forEach(p => p.reset(true));
+    bubbles.forEach(p => p.reset(true));
 }
-
 function triggerSessionComplete() {
     if (sessionComplete) return;
     sessionComplete = true;
@@ -702,8 +715,6 @@ function triggerSessionComplete() {
         }, 2000);
     }
 }
-
-// ── GO TEXT ────────────────────────────────────────────────────────────────
 function drawGoText() {
     const elapsed = performance.now() - goTextStartTime;
     if (elapsed < GO_TEXT_DURATION) {
@@ -714,17 +725,17 @@ function drawGoText() {
         if (progress < 0.2)       alpha = progress / 0.2;
         else if (progress < 0.65) alpha = 1;
         else                      alpha = 1 - (progress - 0.65) / 0.35;
-        ctx.globalAlpha    = Math.max(0, alpha);
-        ctx.font           = `900 ${sz}px sans-serif`;
-        ctx.textAlign      = 'center';
-        ctx.textBaseline   = 'middle';
-        ctx.shadowColor    = 'rgba(57, 255, 20, 1)';
-        ctx.shadowBlur     = 40 * dpr;
-        ctx.strokeStyle    = 'rgba(57, 255, 20, 1)';
-        ctx.lineWidth      = 3 * dpr;
+        ctx.globalAlpha  = Math.max(0, alpha);
+        ctx.font         = `900 ${sz}px sans-serif`;
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor  = 'rgba(57,255,20,1)';
+        ctx.shadowBlur   = 40 * dpr;
+        ctx.strokeStyle  = 'rgba(57,255,20,1)';
+        ctx.lineWidth    = 3 * dpr;
         ctx.strokeText('Go!', canvas.width/2, canvas.height/2);
-        ctx.shadowBlur     = 12 * dpr;
-        ctx.fillStyle      = 'rgba(100, 255, 60, 0.95)';
+        ctx.shadowBlur   = 12 * dpr;
+        ctx.fillStyle    = 'rgba(100,255,60,0.95)';
         ctx.fillText('Go!', canvas.width/2, canvas.height/2);
         ctx.restore();
     } else {
@@ -747,7 +758,6 @@ function animate() {
     }
     smoothIntensity += (audioIntensity - smoothIntensity) * 0.15;
 
-    // Timer
     if (sessionStartTime && !sessionComplete) {
         const elapsed   = (performance.now() - sessionStartTime) / 1000;
         const remaining = Math.max(0, sessionDuration - elapsed);
@@ -765,26 +775,22 @@ function animate() {
     const pulse      = audioMode === 'idle' ? (Math.sin(idleTime)*0.5+0.5) : 0;
     const musicPulse = Math.min(1, smoothIntensity / 80);
 
-    // Trail persistence
-    ctx.fillStyle = 'rgba(0,0,0,0.22)';
+    // Bubbles need a cleaner bg (less trail) so they look round not smeared
+    ctx.fillStyle = questActive ? 'rgba(0,0,0,0.38)' : 'rgba(0,0,0,0.22)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.globalCompositeOperation = 'lighter';
 
     if (!questActive) {
-        // IDLE MODE — laser stars only
         stars.forEach(p => { p.update(); p.draw(pulse); });
     } else {
-        // QUEST MODE — asteroids
-        asteroids.forEach(p => { p.update(musicPulse); p.draw(musicPulse); });
+        bubbles.forEach(p => { p.update(musicPulse); p.draw(musicPulse); });
     }
 
-    // Explosions always render on top
     updateExplosions();
     drawExplosions();
 
     ctx.globalCompositeOperation = 'source-over';
-
     if (showingGoText) drawGoText();
 }
 
