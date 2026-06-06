@@ -27,63 +27,49 @@
             touch-action: none;
         }
         canvas {
-            display: block;
-            position: absolute;
+            display: block; position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
         }
         #brand {
-            position: absolute;
-            top: 50%; left: 50%;
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -55%);
             text-align: center;
             font-family: 'Arial Rounded MT Bold', 'Nunito', 'Arial Black', sans-serif;
             font-size: clamp(64px, 18vw, 120px);
-            font-weight: 900;
-            letter-spacing: 3px;
-            line-height: 0.95;
-            text-transform: uppercase;
-            pointer-events: none;
-            z-index: 10;
-            transition: opacity 1.5s ease;
-            white-space: nowrap;
+            font-weight: 900; letter-spacing: 3px;
+            line-height: 0.95; text-transform: uppercase;
+            pointer-events: none; z-index: 10;
+            transition: opacity 1.5s ease; white-space: nowrap;
             color: rgb(80, 250, 240);
             text-shadow:
-                0 0 4px rgba(150, 255, 250, 1),
-                0 0 12px rgba(80, 240, 230, 0.85),
-                0 0 24px rgba(0, 200, 200, 0.4);
+                0 0 4px rgba(150,255,250,1),
+                0 0 12px rgba(80,240,230,0.85),
+                0 0 24px rgba(0,200,200,0.4);
         }
         #brand.hidden { opacity: 0; }
         #timer {
             position: absolute; top: 36px; width: 100%;
-            text-align: center;
-            color: rgba(129, 216, 208, 0.4);
-            font-size: 13px;
-            letter-spacing: 8px;
-            pointer-events: none;
-            z-index: 15;
+            text-align: center; color: rgba(129,216,208,0.4);
+            font-size: 13px; letter-spacing: 8px;
+            pointer-events: none; z-index: 15;
         }
         #affirmation {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            text-align: center;
-            color: rgba(129, 216, 208, 0);
-            font-size: 17px;
-            letter-spacing: 4px;
+            text-align: center; color: rgba(129,216,208,0);
+            font-size: 17px; letter-spacing: 4px;
             pointer-events: none; z-index: 20;
-            width: 80%;
-            line-height: 2.4;
+            width: 80%; line-height: 2.4;
             transition: color 2s, opacity 2s;
-            text-transform: uppercase;
-            font-weight: 600;
+            text-transform: uppercase; font-weight: 600;
             text-shadow:
-                0 0 8px rgba(129, 216, 208, 1),
-                0 0 20px rgba(129, 216, 208, 0.9),
-                0 0 40px rgba(129, 216, 208, 0.5),
-                0 0 60px rgba(0, 230, 255, 0.3);
-            padding: 18px 24px;
-            border-radius: 8px;
+                0 0 8px rgba(129,216,208,1),
+                0 0 20px rgba(129,216,208,0.9),
+                0 0 40px rgba(129,216,208,0.5),
+                0 0 60px rgba(0,230,255,0.3);
+            padding: 18px 24px; border-radius: 8px;
         }
         #affirmation.visible { background: rgba(0,0,0,0.45); }
         #controls {
@@ -108,8 +94,7 @@
         }
         .btn:hover { border-color:#fff; color:#fff; box-shadow: 0 0 24px rgba(129,216,208,0.5); }
         .btn.active {
-            border-color: rgba(57,255,20,0.9);
-            color: rgba(57,255,20,1);
+            border-color: rgba(57,255,20,0.9); color: rgba(57,255,20,1);
             text-shadow: 0 0 10px rgba(57,255,20,0.8);
             box-shadow: 0 0 22px rgba(57,255,20,0.35);
         }
@@ -118,8 +103,7 @@
             text-align: center; color: rgba(129,216,208,0.22);
             font-size: 9px; letter-spacing: 4px;
             pointer-events: none; z-index: 15;
-            text-transform: uppercase;
-            transition: opacity 2s;
+            text-transform: uppercase; transition: opacity 2s;
         }
         #complete {
             position: absolute; inset: 0;
@@ -133,8 +117,7 @@
         #complete-text {
             color: rgba(129,216,208,0.95);
             font-size: 14px; letter-spacing: 6px;
-            text-transform: uppercase;
-            text-align: center;
+            text-transform: uppercase; text-align: center;
             line-height: 3.2;
             text-shadow: 0 0 18px rgba(129,216,208,0.6);
         }
@@ -190,12 +173,12 @@ const hintEl  = document.getElementById('hint');
 const brandEl = document.getElementById('brand');
 
 let dpr;
-let stars    = [];
-let bubbles  = [];
+let particles = [];
 let explosionParticles = [];
 
-const STAR_COUNT   = 120;
-const BUBBLE_COUNT = 38; // enough to fill screen, not cluttered
+// Idle: fewer, very calm. Quest: more, music-reactive
+const STAR_COUNT_IDLE  = 110;
+const STAR_COUNT_QUEST = 160;
 
 let analyser, dataArray, audioCtx;
 let audioIntensity  = 0;
@@ -203,7 +186,7 @@ let smoothIntensity = 0;
 let idleTime    = 0;
 let audioMode   = 'idle';
 let questActive = false;
-let currentAudio    = null;
+let currentAudio     = null;
 let sessionStartTime = null;
 let sessionDuration  = 255;
 let sessionComplete  = false;
@@ -272,9 +255,7 @@ const rc = () => {
 
 // ── INPUT ──────────────────────────────────────────────────────────────────
 window.addEventListener('mousemove', e => {
-    pointer.x = e.clientX * dpr;
-    pointer.y = e.clientY * dpr;
-    pointer.active = true;
+    pointer.x = e.clientX * dpr; pointer.y = e.clientY * dpr; pointer.active = true;
 });
 window.addEventListener('mouseout', () => pointer.active = false);
 window.addEventListener('mousedown', e => spawnExplosion(e.clientX * dpr, e.clientY * dpr));
@@ -291,19 +272,19 @@ window.addEventListener('touchend', () => pointer.active = false);
 
 // ── ASMR EXPLOSION ────────────────────────────────────────────────────────
 function spawnExplosion(x, y) {
-    const count = 30 + Math.floor(Math.random() * 18);
+    const count = 32 + Math.floor(Math.random() * 20);
     for (let i = 0; i < count; i++) {
-        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4;
-        const speed = Math.random() * 4.5 + 1.5;
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+        const speed = Math.random() * 5.5 + 1.8;
         const [r, g, b] = rc();
         explosionParticles.push({
             x, y,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             life: 1.0,
-            decay: Math.random() * 0.022 + 0.014,
+            decay: Math.random() * 0.02 + 0.012,
             size: Math.random() * 3.5 + 1.0,
-            tail: Math.random() * 12 + 6,
+            tail: Math.random() * 14 + 7,
             r, g, b,
         });
     }
@@ -311,8 +292,8 @@ function spawnExplosion(x, y) {
 function updateExplosions() {
     explosionParticles = explosionParticles.filter(p => p.life > 0);
     for (let p of explosionParticles) {
-        p.x  += p.vx; p.y  += p.vy;
-        p.vx *= 0.93; p.vy *= 0.93;
+        p.x += p.vx; p.y += p.vy;
+        p.vx *= 0.92; p.vy *= 0.92;
         p.life -= p.decay;
     }
 }
@@ -324,18 +305,18 @@ function drawExplosions() {
         ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${a})`;
         ctx.fill();
         const grad = ctx.createLinearGradient(p.x, p.y, p.x - p.vx * p.tail, p.y - p.vy * p.tail);
-        grad.addColorStop(0, `rgba(${p.r},${p.g},${p.b},${a * 0.6})`);
+        grad.addColorStop(0, `rgba(${p.r},${p.g},${p.b},${a * 0.65})`);
         grad.addColorStop(1, `rgba(${p.r},${p.g},${p.b},0)`);
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(p.x - p.vx * p.tail, p.y - p.vy * p.tail);
         ctx.strokeStyle = grad;
-        ctx.lineWidth = (p.size * 0.5) * dpr;
+        ctx.lineWidth = (p.size * 0.55) * dpr;
         ctx.stroke();
     }
 }
 
-// ── IDLE: LASER STARS ─────────────────────────────────────────────────────
+// ── STAR ─────────────────────────────────────────────────────────────────
 class Star {
     constructor(scattered) {
         this.color = rc(); this.reset();
@@ -344,126 +325,50 @@ class Star {
     reset() {
         this.x = Math.random() * canvas.width;
         this.y = -Math.random() * canvas.height * 0.3;
-        const spd = Math.random() * 0.18 + 0.07;
-        const ang = (Math.random() - 0.5) * 0.3;
-        this.vx = Math.sin(ang) * spd;
-        this.vy = Math.cos(ang) * spd + spd * 0.4;
-        this.tail    = Math.random() * 22 + 10;
-        this.glow    = Math.random() * 1.0 + 0.4;
+
+        // Idle: very slow and gentle
+        // Quest: slightly faster base, music drives it further
+        const baseSpd = questActive
+            ? Math.random() * 0.32 + 0.12
+            : Math.random() * 0.18 + 0.07;
+
+        const ang = (Math.random() - 0.5) * 0.35;
+        this.vx = Math.sin(ang) * baseSpd;
+        this.vy = Math.cos(ang) * baseSpd + baseSpd * 0.45;
+
+        // Quest stars get longer tails
+        this.tail    = questActive
+            ? Math.random() * 38 + 18
+            : Math.random() * 22 + 10;
+        this.glow    = Math.random() * 1.2 + 0.4;
         this.life    = Math.random();
         this.color   = rc();
         this.twinkle = Math.random() * Math.PI * 2;
     }
-    update() {
-        this.twinkle += 0.03;
-        this.x += this.vx;
-        this.y += this.vy;
-        if (this.y > canvas.height + this.tail) { this.reset(); return; }
-        if (this.x < 0 || this.x > canvas.width) this.vx *= -0.6;
-        if (pointer.active) {
-            const dx = this.x - pointer.x, dy = this.y - pointer.y;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            const r = 160 * dpr;
-            if (dist < r && dist > 0) {
-                const f = (r - dist) / r;
-                this.vx += (dx/dist)*f*2.0;
-                this.vy += (dy/dist)*f*2.0;
-            }
-        }
-        this.vx *= 0.97;
-        if (this.vy < 0.07) this.vy = 0.07;
-    }
-    draw(pulse) {
-        const [r, g, b] = this.color;
-        const tw = 0.85 + Math.sin(this.twinkle) * 0.15;
-        const a  = Math.min(1, (0.55 + this.life * 0.35 + pulse * 0.2) * tw * particleOpacity);
-        const headR = (this.glow + pulse * 0.3) * dpr;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, headR, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
-        ctx.fill();
-        const tailLen = (this.tail + pulse * 6) * dpr;
-        const grad = ctx.createLinearGradient(this.x, this.y, this.x - this.vx*tailLen*7, this.y - this.vy*tailLen*7);
-        grad.addColorStop(0, `rgba(${r},${g},${b},${a * 0.65})`);
-        grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
-        ctx.beginPath();
-        ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.x - this.vx*tailLen*7, this.y - this.vy*tailLen*7);
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = 0.9 * dpr;
-        ctx.stroke();
-    }
-}
-
-// ── QUEST: BUBBLES ────────────────────────────────────────────────────────
-class Bubble {
-    constructor(scattered) {
-        this.reset(scattered);
-    }
-    reset(scattered) {
-        // Varied sizes — some tiny, some large
-        this.baseRadius = (Math.random() * 28 + 8) * dpr;
-        this.radius     = this.baseRadius;
-
-        this.x = Math.random() * canvas.width;
-        this.y = scattered
-            ? Math.random() * canvas.height
-            : canvas.height + this.baseRadius * 2;
-
-        // Slow upward float with gentle side wobble
-        this.vy = -(Math.random() * 0.45 + 0.18); // always upward, slow
-        this.vx = (Math.random() - 0.5) * 0.3;
-
-        // Wobble phase — makes them drift naturally left/right
-        this.wobblePhase = Math.random() * Math.PI * 2;
-        this.wobbleSpeed = Math.random() * 0.018 + 0.008;
-        this.wobbleAmp   = Math.random() * 0.6 + 0.2;
-
-        this.color    = rc();
-        this.life     = Math.random();
-        this.alpha    = Math.random() * 0.25 + 0.18; // base transparency — soap bubble feel
-        this.shimmer  = Math.random() * Math.PI * 2;
-        this.shimmerSpd = Math.random() * 0.04 + 0.02;
-
-        // Highlight offset — makes it look round/glassy
-        this.hlX = -0.28;
-        this.hlY = -0.28;
-    }
 
     update(musicPulse) {
-        this.wobblePhase += this.wobbleSpeed;
-        this.shimmer     += this.shimmerSpd;
+        this.twinkle += 0.03;
 
-        // Wobble drift
-        this.x  += this.vx + Math.sin(this.wobblePhase) * this.wobbleAmp;
-        this.y  += this.vy;
+        // Quest mode: music accelerates stars noticeably
+        const speedMult = questActive ? 1 + musicPulse * 2.8 : 1;
+        this.x += this.vx * speedMult;
+        this.y += this.vy * speedMult;
 
-        // Music: bubbles swell and rise faster on beats
-        const beatScale = 1 + musicPulse * 0.35;
-        this.radius = this.baseRadius * beatScale;
+        if (this.y > canvas.height + this.tail * dpr) { this.reset(); return; }
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -0.6;
 
-        // Wrap horizontally
-        if (this.x < -this.radius * 2)             this.x = canvas.width  + this.radius;
-        if (this.x > canvas.width  + this.radius * 2) this.x = -this.radius;
-
-        // Reset when floated off top
-        if (this.y < -this.radius * 3) this.reset(false);
-
-        // Pointer push — bubbles float away from finger
+        // Pointer repulsion
         if (pointer.active) {
             const dx = this.x - pointer.x, dy = this.y - pointer.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
-            const rep  = 200 * dpr;
+            const rep  = (questActive ? 200 : 160) * dpr;
             if (dist < rep && dist > 0) {
                 const f = (rep - dist) / rep;
-                this.vx += (dx/dist) * f * 2.8;
-                this.vy += (dy/dist) * f * 2.8;
+                const str = questActive ? 3.0 : 2.0;
+                this.vx += (dx/dist)*f*str;
+                this.vy += (dy/dist)*f*str;
             }
         }
-        // Dampen so they don't fly forever
-        this.vx *= 0.97;
-        // Keep upward momentum
-        if (this.vy > -0.15) this.vy -= 0.01;
 
         // Affirmation repulsion
         if (affirmationVisible && affirmationRect) {
@@ -471,65 +376,49 @@ class Bubble {
             const dy = this.y - affirmationRect.cy;
             if (Math.abs(dx) < affirmationRect.rw && Math.abs(dy) < affirmationRect.rh) {
                 const dist = Math.sqrt(dx*dx+dy*dy)||1;
-                this.vx += (dx/dist) * 1.2;
-                this.vy += (dy/dist) * 1.2;
+                const strength = Math.min(affirmationRect.rw, affirmationRect.rh);
+                const force = (1 - Math.min(1, dist/strength)) * 1.5;
+                this.vx += (dx/dist)*force*0.4;
+                this.vy += (dy/dist)*force*0.4;
             }
         }
+
+        this.vx *= 0.97;
+        const minFall = questActive ? 0.1 : 0.07;
+        if (this.vy < minFall) this.vy = minFall;
     }
 
-    draw(musicPulse) {
+    draw(intensity, pulse, musicPulse) {
         const [r, g, b] = this.color;
-        const shimmerBright = 0.5 + Math.sin(this.shimmer) * 0.5;
-        const a = Math.min(0.88, (this.alpha + musicPulse * 0.3) * particleOpacity);
-        const rad = this.radius;
+        const tw = 0.85 + Math.sin(this.twinkle) * 0.15;
 
-        ctx.save();
-        ctx.globalAlpha = a;
+        // Quest: stars glow brighter with music
+        const musicGlow = questActive ? musicPulse * 0.45 : 0;
+        const a = Math.min(1, (0.55 + this.life*0.35 + pulse*0.2 + musicGlow) * tw * particleOpacity);
 
-        // Outer glow
-        const glow = ctx.createRadialGradient(this.x, this.y, rad * 0.6, this.x, this.y, rad * 1.4);
-        glow.addColorStop(0, `rgba(${r},${g},${b},0.08)`);
-        glow.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        // Quest: head grows on beats
+        const headR = (this.glow + (questActive ? musicPulse * 1.2 : pulse * 0.3)) * dpr;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, rad * 1.4, 0, Math.PI * 2);
-        ctx.fillStyle = glow;
+        ctx.arc(this.x, this.y, headR, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
         ctx.fill();
 
-        // Bubble rim — thin glowing edge
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, rad, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(${r},${g},${b},${0.55 + musicPulse * 0.35})`;
-        ctx.lineWidth   = (1.5 + musicPulse * 2.0) * dpr;
-        ctx.shadowColor = `rgba(${r},${g},${b},0.9)`;
-        ctx.shadowBlur  = (10 + musicPulse * 18) * dpr;
-        ctx.stroke();
-
-        // Inner translucent fill — very faint, like a soap bubble
-        const inner = ctx.createRadialGradient(
-            this.x + rad * this.hlX, this.y + rad * this.hlY, rad * 0.05,
-            this.x, this.y, rad
+        // Tail — longer in quest mode and on beats
+        const tailMult = questActive ? (7 + musicPulse * 8) : 7;
+        const tailLen  = (this.tail + (questActive ? musicPulse * 18 : pulse * 6)) * dpr;
+        const grad = ctx.createLinearGradient(
+            this.x, this.y,
+            this.x - this.vx * tailLen * tailMult,
+            this.y - this.vy * tailLen * tailMult
         );
-        inner.addColorStop(0, `rgba(${r},${g},${b},0.12)`);
-        inner.addColorStop(0.6, `rgba(${r},${g},${b},0.04)`);
-        inner.addColorStop(1,   `rgba(${r},${g},${b},0.01)`);
+        grad.addColorStop(0, `rgba(${r},${g},${b},${a * 0.7})`);
+        grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
         ctx.beginPath();
-        ctx.arc(this.x, this.y, rad, 0, Math.PI * 2);
-        ctx.fillStyle = inner;
-        ctx.fill();
-
-        // Glassy highlight — small bright crescent top-left
-        const hlRad = rad * 0.32;
-        const hlX   = this.x + rad * this.hlX * 0.7;
-        const hlY   = this.y + rad * this.hlY * 0.7;
-        const hl = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlRad);
-        hl.addColorStop(0, `rgba(255,255,255,${0.55 * shimmerBright})`);
-        hl.addColorStop(1, `rgba(255,255,255,0)`);
-        ctx.beginPath();
-        ctx.arc(hlX, hlY, hlRad, 0, Math.PI * 2);
-        ctx.fillStyle = hl;
-        ctx.fill();
-
-        ctx.restore();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x - this.vx*tailLen*tailMult, this.y - this.vy*tailLen*tailMult);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = (questActive ? 1.1 + musicPulse * 0.8 : 0.9) * dpr;
+        ctx.stroke();
     }
 }
 
@@ -538,15 +427,13 @@ function enableCalmMode() {
     calmMode = true;
     calmBtn.textContent = '☀️ Normal Mode';
     calmBtn.classList.add('active');
-    stars.forEach(p => p.color = rc());
-    bubbles.forEach(p => p.color = rc());
+    particles.forEach(p => p.color = rc());
 }
 function disableCalmMode() {
     calmMode = false;
     calmBtn.textContent = '🌙 Calm Mode';
     calmBtn.classList.remove('active');
-    stars.forEach(p => p.color = rc());
-    bubbles.forEach(p => p.color = rc());
+    particles.forEach(p => p.color = rc());
 }
 calmBtn.addEventListener('click', () => calmMode ? disableCalmMode() : enableCalmMode());
 
@@ -555,6 +442,9 @@ playBtn.addEventListener('click', async () => {
         if (currentAudio) currentAudio.pause();
         audioMode   = 'idle';
         questActive = false;
+        // Rebuild with idle star count
+        particles = [];
+        for (let i = 0; i < STAR_COUNT_IDLE; i++) particles.push(new Star(true));
         playBtn.textContent = '▶ Begin Quest';
         playBtn.classList.remove('active');
         sessionStartTime = null;
@@ -578,7 +468,6 @@ playBtn.addEventListener('click', async () => {
         currentAudio.crossOrigin = 'anonymous';
         currentAudio.loop = false;
 
-        // Sync timer to actual song duration
         currentAudio.addEventListener('loadedmetadata', () => {
             sessionDuration = currentAudio.duration || 255;
             const m = Math.floor(sessionDuration / 60);
@@ -596,10 +485,14 @@ playBtn.addEventListener('click', async () => {
         sessionStartTime = performance.now();
         sessionComplete  = false;
         affirmIndex = 0; affirmTimer = 0;
+
+        // Rebuild with quest star count — more stars, longer tails
+        particles = [];
+        for (let i = 0; i < STAR_COUNT_QUEST; i++) particles.push(new Star(true));
+
         playBtn.textContent = '■ End Quest';
         playBtn.classList.add('active');
         hintEl.style.opacity = '0';
-
         showingGoText   = true;
         goTextStartTime = performance.now();
         setTimeout(() => brandEl.classList.add('hidden'), 1800);
@@ -619,10 +512,9 @@ function resize() {
     dpr = window.devicePixelRatio || 1;
     canvas.width  = window.innerWidth  * dpr;
     canvas.height = window.innerHeight * dpr;
-    stars   = [];
-    bubbles = [];
-    for (let i = 0; i < STAR_COUNT;   i++) stars.push(new Star(true));
-    for (let i = 0; i < BUBBLE_COUNT; i++) bubbles.push(new Bubble(true));
+    particles = [];
+    const count = questActive ? STAR_COUNT_QUEST : STAR_COUNT_IDLE;
+    for (let i = 0; i < count; i++) particles.push(new Star(true));
 }
 
 // ── AFFIRMATION ────────────────────────────────────────────────────────────
@@ -673,10 +565,10 @@ function showAffirmation() {
 function updateAffirmationRect() {
     const rect = affirmationEl.getBoundingClientRect();
     affirmationRect = {
-        cx: (rect.left + rect.width  / 2) * dpr,
-        cy: (rect.top  + rect.height / 2) * dpr,
-        rw: (rect.width  / 2 + 50) * dpr,
-        rh: (rect.height / 2 + 40) * dpr,
+        cx: (rect.left + rect.width/2)  * dpr,
+        cy: (rect.top  + rect.height/2) * dpr,
+        rw: (rect.width/2  + 50) * dpr,
+        rh: (rect.height/2 + 40) * dpr,
     };
 }
 
@@ -689,6 +581,8 @@ function replayQuest() {
     playBtn.classList.remove('active');
     audioMode   = 'idle';
     questActive = false;
+    particles = [];
+    for (let i = 0; i < STAR_COUNT_IDLE; i++) particles.push(new Star(true));
     hintEl.style.opacity = '1';
     affirmationEl.style.color   = 'rgba(129,216,208,0)';
     affirmationEl.style.opacity = '0';
@@ -697,8 +591,6 @@ function replayQuest() {
     particleOpacity    = 1.0;
     showingGoText      = false;
     brandEl.classList.remove('hidden');
-    stars.forEach(p => p.reset());
-    bubbles.forEach(p => p.reset(true));
 }
 function triggerSessionComplete() {
     if (sessionComplete) return;
@@ -775,22 +667,16 @@ function animate() {
     const pulse      = audioMode === 'idle' ? (Math.sin(idleTime)*0.5+0.5) : 0;
     const musicPulse = Math.min(1, smoothIntensity / 80);
 
-    // Bubbles need a cleaner bg (less trail) so they look round not smeared
-    ctx.fillStyle = questActive ? 'rgba(0,0,0,0.38)' : 'rgba(0,0,0,0.22)';
+    // Quest mode: slightly faster trail clear = crisper streaks on beats
+    ctx.fillStyle = questActive ? 'rgba(0,0,0,0.19)' : 'rgba(0,0,0,0.22)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.globalCompositeOperation = 'lighter';
-
-    if (!questActive) {
-        stars.forEach(p => { p.update(); p.draw(pulse); });
-    } else {
-        bubbles.forEach(p => { p.update(musicPulse); p.draw(musicPulse); });
-    }
-
+    particles.forEach(p => { p.update(musicPulse); p.draw(smoothIntensity, pulse, musicPulse); });
     updateExplosions();
     drawExplosions();
-
     ctx.globalCompositeOperation = 'source-over';
+
     if (showingGoText) drawGoText();
 }
 
