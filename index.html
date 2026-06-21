@@ -93,7 +93,7 @@ let galaxy = [];
 let calmDots = [];
 let shootingStars = [];
 
-const STAR_COUNT   = 110;
+const STAR_COUNT   = 440;
 const GALAXY_COUNT = 1700;
 const CALM_COUNT   = 900;
 
@@ -166,42 +166,50 @@ window.addEventListener('touchmove',e=>{
 },{passive:false});
 window.addEventListener('touchend',()=>{pointer.active=false;pointer.vx=0;pointer.vy=0;});
 
-// ── IDLE: LASER BEAM STARS ────────────────────────────────────────────────
+// ── IDLE: SMALL TWINKLING DOTS (subtle drift, gentle falling speck) ───────
 class Star {
     constructor(scattered){this.color=rc();this.reset();if(scattered)this.y=Math.random()*canvas.height;}
     reset(){
         this.x=Math.random()*canvas.width;
         this.y=-Math.random()*canvas.height*0.3;
-        const spd=Math.random()*0.28+0.12;
-        const ang=(Math.random()-0.5)*0.32;
-        this.vx=Math.sin(ang)*spd; this.vy=Math.cos(ang)*spd+spd*0.45;
-        this.tail=Math.random()*26+12; this.glow=Math.random()*1.1+0.4;
+        const spd=Math.random()*0.12+0.05;
+        const ang=(Math.random()-0.5)*0.2;
+        this.vx=Math.sin(ang)*spd; this.vy=Math.cos(ang)*spd+spd*0.3;
+        this.tail=Math.random()*4+1.5; this.glow=Math.random()*0.55+0.35;
         this.life=Math.random(); this.color=rc();
         this.twinkle=Math.random()*Math.PI*2;
     }
     update(){
-        this.twinkle+=0.03; this.x+=this.vx; this.y+=this.vy;
+        this.twinkle+=0.025; this.x+=this.vx; this.y+=this.vy;
         if(this.y>canvas.height+this.tail){this.reset();return;}
         if(this.x<0||this.x>canvas.width)this.vx*=-0.6;
         if(pointer.active){
             const dx=this.x-pointer.x,dy=this.y-pointer.y;
-            const dist=Math.sqrt(dx*dx+dy*dy),r=150*dpr;
-            if(dist<r&&dist>0){const f=(r-dist)/r;this.vx+=(dx/dist)*f*1.8;this.vy+=(dy/dist)*f*1.8;}
+            const dist=Math.sqrt(dx*dx+dy*dy),r=220*dpr;
+            if(dist<r&&dist>0){
+                const f=(r-dist)/r;
+                this.fade=Math.min(1,(this.fade||0)+f*0.35);
+            } else if(this.fade>0){
+                this.fade=Math.max(0,this.fade-0.05);
+            }
+        } else if(this.fade>0){
+            this.fade=Math.max(0,this.fade-0.05);
         }
-        this.vx*=0.97; if(this.vy<0.1)this.vy=0.1;
+        this.vx*=0.97; if(this.vy<0.04)this.vy=0.04;
     }
     draw(pulse){
         const [r,g,b]=this.color;
-        const tw=0.85+Math.sin(this.twinkle)*0.15;
-        const a=Math.min(1,(0.58+this.life*0.35+pulse*0.22)*tw*particleOpacity);
-        ctx.beginPath();ctx.arc(this.x,this.y,(this.glow+pulse*0.35)*dpr,0,Math.PI*2);
+        const tw=0.8+Math.sin(this.twinkle)*0.2;
+        const fadeMult=1-(this.fade||0);
+        const a=Math.min(1,(0.5+this.life*0.35+pulse*0.18)*tw*particleOpacity*fadeMult);
+        ctx.beginPath();ctx.arc(this.x,this.y,(this.glow+pulse*0.2)*dpr,0,Math.PI*2);
         ctx.fillStyle=`rgba(${r},${g},${b},${a})`;ctx.fill();
-        const tl=(this.tail+pulse*7)*dpr;
+        const tl=(this.tail+pulse*1.5)*dpr;
         const grad=ctx.createLinearGradient(this.x,this.y,this.x-this.vx*tl*7,this.y-this.vy*tl*7);
-        grad.addColorStop(0,`rgba(${r},${g},${b},${a*0.65})`);
+        grad.addColorStop(0,`rgba(${r},${g},${b},${a*0.5})`);
         grad.addColorStop(1,`rgba(${r},${g},${b},0)`);
         ctx.beginPath();ctx.moveTo(this.x,this.y);ctx.lineTo(this.x-this.vx*tl*7,this.y-this.vy*tl*7);
-        ctx.strokeStyle=grad;ctx.lineWidth=0.9*dpr;ctx.stroke();
+        ctx.strokeStyle=grad;ctx.lineWidth=0.7*dpr;ctx.stroke();
     }
 }
 
