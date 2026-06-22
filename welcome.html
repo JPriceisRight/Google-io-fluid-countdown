@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Self Quest: Small Doses — micro-wellness for a quieter minute</title>
+<meta name="description" content="Small doses of calm. An original micro-wellness app with living visuals, original music, and zero data collected. Free on the web and Android." />
+<meta name="theme-color" content="#000000" />
+
+<!-- Social sharing -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Self Quest: Small Doses" />
+<meta property="og:description" content="Small doses of calm — original music, living visuals, zero data collected." />
+<meta property="og:url" content="https://selfquest.app/welcome" />
+<meta property="og:image" content="https://selfquest.app/og-image.png" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    --black:#000000;
+    --tiff:#50FAF0;
+    --white:#EAEAEA;
+    --gray:#ABABAB;
+    --dim:#6f6f6f;
+    --hair:rgba(80,250,240,0.16);
+    --display:"Space Grotesk", "Segoe UI", system-ui, sans-serif;
+    --body:system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--black);
+    color:var(--gray);
+    font-family:var(--body);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  a{ color:var(--tiff); text-decoration:none; }
+  a:hover{ text-decoration:underline; }
+
+  :focus-visible{
+    outline:2px solid var(--tiff);
+    outline-offset:3px;
+    border-radius:2px;
+  }
+
+  /* ---------- Ambient particle canvas ---------- */
+  #field{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    display:block;
+  }
+  /* soft radial depth behind the hero */
+  .glow{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background:
+      radial-gradient(60% 50% at 50% 32%, rgba(16,52,51,0.55) 0%, rgba(0,0,0,0) 70%);
+  }
+
+  .wrap{ position:relative; z-index:1; }
+
+  .shell{
+    max-width:1040px;
+    margin:0 auto;
+    padding:0 28px;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    min-height:100svh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding-top:72px;
+    padding-bottom:72px;
+  }
+
+  .eyebrow{
+    font-family:var(--display);
+    font-weight:500;
+    font-size:0.82rem;
+    letter-spacing:0.34em;
+    text-transform:uppercase;
+    color:var(--tiff);
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:26px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:46px; height:2px;
+    background:var(--tiff);
+    display:inline-block;
+  }
+
+  h1{
+    font-family:var(--display);
+    color:var(--white);
+    font-weight:700;
+    line-height:0.98;
+    letter-spacing:-0.02em;
+    font-size:clamp(3rem, 11vw, 6.4rem);
+  }
+  h1 .doses{
+    display:block;
+    color:var(--tiff);
+  }
+
+  .tagline{
+    font-size:clamp(1.05rem, 2.4vw, 1.4rem);
+    color:var(--gray);
+    max-width:34ch;
+    margin-top:28px;
+  }
+
+  .cta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:16px;
+    margin-top:42px;
+  }
+  .btn{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:1rem;
+    padding:15px 30px;
+    border-radius:8px;
+    border:1.5px solid var(--tiff);
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    transition:background .18s ease, color .18s ease, transform .18s ease;
+    cursor:pointer;
+    background:transparent;
+  }
+  .btn:hover{ text-decoration:none; transform:translateY(-2px); }
+  .btn-solid{ background:var(--tiff); color:#001513; border-color:var(--tiff); }
+  .btn-solid:hover{ background:#7dfff6; }
+  .btn-ghost{ color:var(--tiff); }
+  .btn-ghost:hover{ background:rgba(80,250,240,0.10); }
+
+  .free-note{
+    margin-top:22px;
+    font-size:1rem;
+    font-weight:500;
+    color:#cfcfcf;
+    letter-spacing:0.02em;
+  }
+
+  /* ---------- Section scaffolding ---------- */
+  section.block{ padding:84px 0; }
+  .label{
+    font-family:var(--display);
+    font-weight:500;
+    font-size:0.78rem;
+    letter-spacing:0.3em;
+    text-transform:uppercase;
+    color:var(--tiff);
+    margin-bottom:36px;
+  }
+  .divider{ height:1px; background:var(--hair); border:0; }
+
+  /* ---------- Features ---------- */
+  .features{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:30px;
+  }
+  .feature h3{
+    font-family:var(--display);
+    color:var(--white);
+    font-weight:600;
+    font-size:1.32rem;
+    margin-bottom:12px;
+    letter-spacing:-0.01em;
+  }
+  .feature p{ font-size:1rem; }
+  .feature .mark{
+    width:34px; height:34px;
+    border:1.5px solid var(--tiff);
+    border-radius:50%;
+    margin-bottom:20px;
+    position:relative;
+  }
+  .feature .mark::after{
+    content:"";
+    position:absolute;
+    inset:0; margin:auto;
+    width:9px; height:9px;
+    background:var(--tiff);
+    border-radius:50%;
+  }
+
+  /* ---------- Install ---------- */
+  .install-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:28px;
+  }
+  .card{
+    border:1px solid var(--hair);
+    border-radius:14px;
+    padding:34px 32px;
+    background:rgba(80,250,240,0.02);
+  }
+  .card h3{
+    font-family:var(--display);
+    color:var(--white);
+    font-weight:600;
+    font-size:1.28rem;
+    margin-bottom:22px;
+  }
+  ol.steps{ list-style:none; counter-reset:s; }
+  ol.steps li{
+    counter-increment:s;
+    position:relative;
+    padding-left:42px;
+    margin-bottom:16px;
+    font-size:0.99rem;
+  }
+  ol.steps li::before{
+    content:counter(s);
+    position:absolute; left:0; top:-1px;
+    width:26px; height:26px;
+    border:1px solid var(--tiff);
+    color:var(--tiff);
+    border-radius:50%;
+    font-family:var(--display);
+    font-size:0.8rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- Footer ---------- */
+  footer{
+    padding:60px 0 80px;
+    border-top:1px solid var(--hair);
+  }
+  .foot-rights{
+    color:var(--dim);
+    font-size:0.9rem;
+    max-width:48ch;
+    margin-bottom:24px;
+  }
+  .foot-links{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px 28px;
+    font-family:var(--display);
+    font-size:0.92rem;
+    letter-spacing:0.04em;
+  }
+  .foot-links a{ color:var(--gray); }
+  .foot-links a:hover{ color:var(--tiff); }
+  .wordmark{
+    margin-top:40px;
+    font-family:var(--display);
+    font-weight:500;
+    letter-spacing:0.34em;
+    font-size:0.74rem;
+    color:var(--tiff);
+    text-transform:uppercase;
+  }
+
+  @media (max-width:760px){
+    .features{ grid-template-columns:1fr; gap:38px; }
+    .install-grid{ grid-template-columns:1fr; }
+    section.block{ padding:64px 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .btn:hover{ transform:none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="field" aria-hidden="true"></canvas>
+<div class="glow" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="shell">
+      <p class="eyebrow">A relaxing, no-stress micro-wellness app</p>
+      <h1>Self Quest<span class="doses">Small Doses</span></h1>
+      <p class="tagline">Small doses of calm. Original music, living visuals, and a quiet minute that's just yours.</p>
+
+      <div class="cta-row">
+        <a class="btn btn-solid" href="/">Launch the app →</a>
+        <a class="btn btn-ghost" href="#install">How to install</a>
+      </div>
+      <p class="free-note">No accounts · No ads · No tracking · Collects zero data.</p>
+    </div>
+  </header>
+
+  <main class="shell">
+    <hr class="divider" />
+
+    <section class="block" aria-labelledby="what-label">
+      <p class="label" id="what-label">What it is</p>
+      <div class="features">
+        <div class="feature">
+          <div class="mark" aria-hidden="true"></div>
+          <h3>Living visuals</h3>
+          <p>A particle field that's generated live on your device and breathes with you — calm, idle, or focused. Nothing canned, nothing streamed.</p>
+        </div>
+        <div class="feature">
+          <div class="mark" aria-hidden="true"></div>
+          <h3>Original music</h3>
+          <p>Six original tracks that move across classical, trap, rock, and more — wellness without the usual spa clichés.</p>
+        </div>
+        <div class="feature">
+          <div class="mark" aria-hidden="true"></div>
+          <h3>Yours alone</h3>
+          <p>No login, no profile, no data leaving your phone. Open it, breathe, close it. That's the whole deal.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <section class="block" id="install" aria-labelledby="install-label">
+      <p class="label" id="install-label">Add it to your home screen</p>
+      <div class="install-grid">
+        <div class="card">
+          <h3>On Android</h3>
+          <ol class="steps">
+            <li>Open <strong>selfquest.app</strong> in Chrome.</li>
+            <li>Tap the <strong>⋮</strong> menu, top right.</li>
+            <li>Choose <strong>Install app</strong> (or “Add to Home screen”).</li>
+            <li>Confirm — it lands on your home screen like any app.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3>On iPhone</h3>
+          <ol class="steps">
+            <li>Open <strong>selfquest.app</strong> in Safari.</li>
+            <li>Tap the <strong>Share</strong> icon at the bottom.</li>
+            <li>Scroll to <strong>Add to Home Screen</strong>.</li>
+            <li>Tap <strong>Add</strong> — done.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+  </main>
+
+  <footer class="shell">
+    <p class="foot-rights">All music, visuals, and affirmations are original works by Jeseka Price, and the property of Price Royalty Publishing (BMI). All rights reserved.</p>
+    <nav class="foot-links" aria-label="Footer">
+      <a href="/">Launch the app</a>
+      <a href="/privacy.html">Privacy policy</a>
+      <a href="mailto:jeseka@priceroyalty.io">Contact</a>
+      <span style="color:var(--dim)">Coming soon to Google Play</span>
+    </nav>
+    <p class="wordmark">Self Quest : Small Doses</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('field');
+  const ctx = canvas.getContext('2d');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let w, h, dpr, particles = [];
+
+  const TIFF = '80,250,240';
+  const COUNT = 64;       // calm, not busy
+  const LINK_DIST = 150;  // faint constellation links
+
+  function size(){
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = canvas.clientWidth = window.innerWidth;
+    h = canvas.clientHeight = window.innerHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function seed(){
+    particles = [];
+    for(let i=0; i<COUNT; i++){
+      particles.push({
+        x: Math.random()*w,
+        y: Math.random()*h,
+        vx: (Math.random()-0.5)*0.18,   // slow drift
+        vy: (Math.random()-0.5)*0.18,
+        r: Math.random()*1.7 + 0.6,
+        a: Math.random()*0.5 + 0.25
+      });
+    }
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+
+    // faint links
+    for(let i=0; i<particles.length; i++){
+      for(let j=i+1; j<particles.length; j++){
+        const p=particles[i], q=particles[j];
+        const dx=p.x-q.x, dy=p.y-q.y;
+        const d=Math.hypot(dx,dy);
+        if(d<LINK_DIST){
+          const o=(1 - d/LINK_DIST)*0.10;
+          ctx.strokeStyle='rgba('+TIFF+','+o.toFixed(3)+')';
+          ctx.lineWidth=1;
+          ctx.beginPath();
+          ctx.moveTo(p.x,p.y);
+          ctx.lineTo(q.x,q.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // motes
+    for(const p of particles){
+      ctx.beginPath();
+      ctx.fillStyle='rgba('+TIFF+','+p.a.toFixed(3)+')';
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  function step(){
+    for(const p of particles){
+      p.x += p.vx; p.y += p.vy;
+      if(p.x < -20) p.x = w+20;
+      if(p.x > w+20) p.x = -20;
+      if(p.y < -20) p.y = h+20;
+      if(p.y > h+20) p.y = -20;
+    }
+    draw();
+    raf = requestAnimationFrame(step);
+  }
+
+  let raf;
+  function start(){
+    size(); seed();
+    if(reduce){ draw(); return; }   // static frame, respect reduced motion
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(step);
+  }
+
+  let t;
+  window.addEventListener('resize', function(){
+    clearTimeout(t);
+    t = setTimeout(start, 150);
+  });
+
+  start();
+})();
+</script>
+</body>
+</html>
