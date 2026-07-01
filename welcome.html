@@ -321,7 +321,7 @@
         <div class="feature">
           <div class="mark" aria-hidden="true"></div>
           <h3>Original music</h3>
-          <p>Six original tracks that move across classical, trap, rock, and more — wellness without the usual spa clichés.</p>
+          <p>Three original tracks that move across classical, trap, rock, and more — wellness without the usual spa clichés.</p>
         </div>
         <div class="feature">
           <div class="mark" aria-hidden="true"></div>
@@ -379,9 +379,10 @@
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let w, h, dpr, particles = [];
 
-  const TIFF = '80,250,240';
+  const TIFF = '80,250,240';   // dots stay tiffany
+  const LINK = '90,160,255';   // links are a clearer blue now
   const COUNT = 64;       // calm, not busy
-  const LINK_DIST = 150;  // faint constellation links
+  const LINK_DIST = 170;  // slightly longer reach so links show up more often
 
   function size(){
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -409,16 +410,16 @@
   function draw(){
     ctx.clearRect(0,0,w,h);
 
-    // faint links
+    // constellation links — brighter blue, more visible
     for(let i=0; i<particles.length; i++){
       for(let j=i+1; j<particles.length; j++){
         const p=particles[i], q=particles[j];
         const dx=p.x-q.x, dy=p.y-q.y;
         const d=Math.hypot(dx,dy);
         if(d<LINK_DIST){
-          const o=(1 - d/LINK_DIST)*0.10;
-          ctx.strokeStyle='rgba('+TIFF+','+o.toFixed(3)+')';
-          ctx.lineWidth=1;
+          const o=(1 - d/LINK_DIST)*0.32;
+          ctx.strokeStyle='rgba('+LINK+','+o.toFixed(3)+')';
+          ctx.lineWidth=1.2;
           ctx.beginPath();
           ctx.moveTo(p.x,p.y);
           ctx.lineTo(q.x,q.y);
